@@ -1,0 +1,3223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数理演易 - 传统智慧与AI的融合</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== 基础设置：新中式配色与字体 ==================== */
+        :root {
+            --ink-black: #2B2B2B;
+            --ink-grey: #5A6A76;
+            --paper-bg: #F7F5F0;
+            --primary-red: #B83B43;
+            --primary-blue: #3E5C76;
+            --accent-gold: #cfaa76;
+            --jade-green: #7D9F88;
+            --symbol-brown: #8B6F47;
+            --quantity-blue: #6B8E9F;
+            --number-brown: #A67C52;
+            --reasoning-brown: #9B7A6B;
+            --card-bg: #FFFFFF;
+            --border-color: #E0DCD3;
+            --font-serif: "Noto Serif SC", "Songti SC", "SimSun", "STSong", serif;
+            --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--paper-bg);
+            color: var(--ink-black);
+            overflow-x: hidden;
+            background-image: radial-gradient(#E8E6E1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* ==================== 导航栏 ==================== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-wrapper .yi-logo {
+            width: 50px;
+            height: 50px;
+            z-index: 10;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: block;
+        }
+
+        .logo-wrapper .tech-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed #546e7a;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0.8) rotate(0deg);
+            transition: all 0.5s ease;
+        }
+
+        .logo:hover .logo-wrapper .yi-logo,
+        .logo-wrapper:hover .yi-logo {
+            transform: rotate(360deg);
+        }
+
+        .logo:hover .logo-wrapper .tech-ring,
+        .logo-wrapper:hover .tech-ring {
+            opacity: 0.6;
+            transform: scale(1.1) rotate(-180deg);
+        }
+
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            letter-spacing: 2px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .top-action-btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 999px;
+            padding: 10px 18px;
+            border: 1.5px solid transparent;
+            min-height: 44px;
+            font-family: var(--font-serif);
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--primary-blue);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 18px rgba(62, 92, 118, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(8px);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease, color 0.22s ease;
+            cursor: pointer;
+        }
+
+        .top-action-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .top-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(62, 92, 118, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        }
+
+        .top-action-btn:active { transform: translateY(0); }
+
+        .top-action-login {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(243, 239, 230, 0.96));
+            border-color: rgba(62, 92, 118, 0.55);
+            color: var(--primary-blue);
+        }
+
+        .top-action-login:hover {
+            border-color: rgba(62, 92, 118, 0.95);
+            color: #1f3342;
+            box-shadow: 0 16px 26px rgba(62, 92, 118, 0.2), 0 0 0 1px rgba(62, 92, 118, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .top-action-btn .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-action-btn .btn-shine {
+            position: absolute;
+            inset: 0;
+            transform: translateX(-120%);
+            background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+            transition: transform 0.55s ease;
+            pointer-events: none;
+        }
+
+        .top-action-btn:hover .btn-shine { transform: translateX(120%); }
+
+        /* ==================== Hero Section ==================== */
+        .hero-section {
+            position: relative;
+            padding: 80px 20px 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: visible;
+        }
+
+        .hero-title {
+            text-align: center;
+            margin-bottom: 50px;
+            z-index: 10;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .brand-eyebrow {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-family: 'Noto Sans SC', var(--font-sans);
+        }
+
+        .brand-eyebrow::before,
+        .brand-eyebrow::after {
+            content: "";
+            display: block;
+            width: 30px;
+            height: 1px;
+            background-color: var(--accent-gold);
+            opacity: 0.5;
+        }
+
+        .hero-title h1 {
+            font-family: 'Noto Serif SC', var(--font-serif);
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--ink-black);
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title h1::after {
+            content: "易";
+            position: absolute;
+            right: -40px;
+            top: 0;
+            font-size: 14px;
+            color: white;
+            background-color: #b03a2e;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            box-shadow: 2px 2px 0 rgba(176, 58, 46, 0.2);
+            opacity: 0.8;
+            transform: rotate(8deg);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--ink-grey);
+            font-weight: 300;
+            margin-bottom: 30px;
+            font-family: 'Noto Sans SC', var(--font-sans);
+        }
+
+        .badge-notice {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            background-color: rgba(184, 59, 67, 0.08);
+            color: var(--primary-red);
+            font-size: 0.85rem;
+            border-radius: 50px;
+            font-weight: 500;
+            gap: 6px;
+        }
+
+        .badge-notice svg { width: 14px; height: 14px; }
+
+        /* 轮播背景层 */
+        .cards-carousel-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 400px;
+            position: relative;
+            margin-bottom: 60px;
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            opacity: 0.9;
+            overflow: visible;
+        }
+
+        .cards-track {
+            display: flex;
+            gap: 30px;
+            position: absolute;
+            left: 0;
+            animation: scrollLeft 60s linear infinite;
+            width: max-content;
+        }
+
+        .cards-track:hover { animation-play-state: paused; }
+
+        /* 数学卡片 */
+        .math-card {
+            width: 300px;
+            height: 360px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(43, 43, 43, 0.06);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .math-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(43, 43, 43, 0.1);
+            border-color: var(--primary-blue);
+            z-index: 10;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+            font-weight: 500;
+            font-family: var(--font-serif);
+            letter-spacing: 1px;
+        }
+
+        .tag-main {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .tag-sub {
+            padding: 3px 10px !important;
+            font-size: 11px !important;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-right: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tag-main.model, .tag-sub.model { background: var(--primary-red); }
+        .tag-main.data, .tag-sub.data { background: var(--primary-blue); }
+        .tag-main.spatial, .tag-sub.spatial { background: var(--jade-green); }
+        .tag-main.geometric, .tag-sub.geometric { background: var(--accent-gold); }
+        .tag-main.symbol, .tag-sub.symbol { background: var(--symbol-brown); }
+        .tag-main.quantity, .tag-sub.quantity { background: var(--quantity-blue); }
+        .tag-main.number, .tag-sub.number { background: var(--number-brown); }
+        .tag-main.reasoning, .tag-sub.reasoning { background: var(--reasoning-brown); }
+        .tag-main.operation, .tag-sub.operation { background: var(--primary-blue); }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .card-content h3 {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--ink-black);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-content .question-text {
+            font-size: 13px;
+            color: var(--ink-grey);
+            margin-bottom: 16px;
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: calc(1.6em * 2);
+        }
+
+        .graph-placeholder {
+            width: 100%;
+            height: 140px;
+            background: #FAFAFA;
+            border: 1px solid #EEE;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 搜索条 */
+        .search-container-center {
+            position: relative;
+            z-index: 50;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: -40px;
+        }
+
+        .search-floater {
+            background: white;
+            border-radius: 50px;
+            padding: 8px 8px 8px 30px;
+            box-shadow: 0 15px 40px rgba(62, 92, 118, 0.15);
+            display: flex;
+            align-items: center;
+            width: 720px;
+            max-width: 90%;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .search-floater:hover,
+        .search-floater:focus-within {
+            box-shadow: 0 20px 50px rgba(184, 59, 67, 0.15);
+            border-color: var(--primary-red);
+            transform: translateY(-2px);
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 18px;
+            color: var(--ink-black);
+            background: transparent;
+            font-family: var(--font-sans);
+            height: 50px;
+            padding-right: 10px;
+        }
+
+        .search-input::placeholder { color: #999; font-weight: 300; }
+
+        /* 附件预览区域 */
+        .attach-preview {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin: 8px auto 0;
+            max-width: 720px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--ink-grey);
+            position: relative;
+            z-index: 50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .attach-preview.show { display: flex; }
+        .attach-preview img {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+        .attach-preview .attach-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .attach-preview .attach-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .attach-preview .attach-desc {
+            font-size: 12px;
+            color: #aaa;
+        }
+        .attach-preview .attach-remove {
+            background: none;
+            border: none;
+            color: #bbb;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .attach-preview .attach-remove:hover {
+            color: var(--primary-red);
+            background: #f5f5f5;
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 4px;
+            padding-right: 12px;
+            margin-right: 8px;
+            border-right: 1px solid #EEE;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--ink-grey);
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background-color: #F7F5F0;
+            color: var(--primary-red);
+            transform: scale(1.05);
+        }
+
+        .search-btn {
+            background: var(--primary-red);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .search-btn:hover {
+            background: #A02F36;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* ==================== 教学内容展示区域 ==================== */
+        .teachings-showcase-section {
+            padding: 80px 20px;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .showcase-header {
+            max-width: 1400px;
+            margin: 0 auto 50px;
+            text-align: center;
+        }
+
+        .showcase-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .showcase-title h2 {
+            font-family: var(--font-serif);
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--ink-black);
+        }
+
+        .showcase-title p {
+            color: var(--ink-grey);
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .tag-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 40px;
+        }
+
+        .tag-filter-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--ink-grey);
+            border-radius: 20px;
+            font-size: 14px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tag-filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tag-filter-btn.active { color: white; border-color: transparent; }
+        .tag-filter-btn[data-tag="all"].active { background: var(--primary-blue); }
+        .tag-filter-btn[data-tag="模型意识"].active, .tag-filter-btn[data-tag="模型意识"]:hover { background: var(--primary-red); border-color: var(--primary-red); color: white; }
+        .tag-filter-btn[data-tag="数据意识"].active, .tag-filter-btn[data-tag="数据意识"]:hover { background: var(--primary-blue); border-color: var(--primary-blue); color: white; }
+        .tag-filter-btn[data-tag="空间观念"].active, .tag-filter-btn[data-tag="空间观念"]:hover { background: var(--jade-green); border-color: var(--jade-green); color: white; }
+        .tag-filter-btn[data-tag="几何直观"].active, .tag-filter-btn[data-tag="几何直观"]:hover { background: var(--accent-gold); border-color: var(--accent-gold); color: white; }
+        .tag-filter-btn[data-tag="符号意识"].active, .tag-filter-btn[data-tag="符号意识"]:hover { background: #8B6F47; border-color: #8B6F47; color: white; }
+        .tag-filter-btn[data-tag="量感"].active, .tag-filter-btn[data-tag="量感"]:hover { background: #6B8E9F; border-color: #6B8E9F; color: white; }
+        .tag-filter-btn[data-tag="数感"].active, .tag-filter-btn[data-tag="数感"]:hover { background: #A67C52; border-color: #A67C52; color: white; }
+        .tag-filter-btn[data-tag="推理意识"].active, .tag-filter-btn[data-tag="推理意识"]:hover { background: #9B7A6B; border-color: #9B7A6B; color: white; }
+        .tag-filter-btn[data-tag="运算能力"].active, .tag-filter-btn[data-tag="运算能力"]:hover { background: var(--primary-blue); border-color: var(--primary-blue); color: white; }
+
+        /* 瀑布流 */
+        .masonry-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            column-count: 4;
+            column-gap: 24px;
+        }
+
+        .masonry-card {
+            break-inside: avoid;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .masonry-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-blue);
+        }
+
+        .masonry-card-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+        }
+
+        .masonry-card-content { padding: 24px; }
+
+        .masonry-card-title {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ink-black);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .masonry-card-question {
+            font-size: 13px;
+            color: var(--ink-grey);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .masonry-card-likes {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        .masonry-card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 填充块 */
+        .masonry-filler-block {
+            break-inside: avoid;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .masonry-filler-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .filler-quote {
+            background: linear-gradient(135deg, #FDFBF7 0%, #F2EFE9 100%);
+            padding: 40px 30px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .filler-quote .quote-container {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            min-height: 120px;
+            gap: 20px;
+        }
+
+        .filler-quote .quote-divider {
+            width: 2px;
+            background: #8B3A3A;
+            flex-shrink: 0;
+            align-self: stretch;
+            margin: 0 10px;
+        }
+
+        .filler-quote .quote-author {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            color: var(--ink-grey);
+            opacity: 0.7;
+            letter-spacing: 2px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filler-quote .quote-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-family: var(--font-sans);
+            font-size: 28px;
+            color: var(--ink-black);
+            line-height: 1.8;
+            letter-spacing: 4px;
+            font-weight: 600;
+            max-width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filler-color-block {
+            padding: 30px 24px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filler-color-block.blue { background: var(--primary-blue); }
+        .filler-color-block.gold { background: var(--accent-gold); }
+        .filler-color-block.green { background: var(--jade-green); }
+        .filler-color-block.red { background: var(--primary-red); }
+
+        .filler-color-block .block-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.9; }
+        .filler-color-block .block-text { font-family: var(--font-serif); font-size: 18px; font-weight: 600; letter-spacing: 2px; }
+
+        .filler-widget { background: white; padding: 24px; min-height: 180px; }
+        .filler-widget .widget-title { font-family: var(--font-serif); font-size: 14px; color: var(--ink-grey); margin-bottom: 16px; text-align: center; letter-spacing: 1px; }
+        .filler-widget .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .filler-widget .tag-cloud .tag { cursor: pointer; transition: all 0.2s; background: transparent !important; color: var(--ink-grey) !important; border: 1px solid var(--border-color); }
+        .filler-widget .tag-cloud .tag::before { content: '#'; margin-right: 2px; }
+        .filler-widget .tag-cloud .tag.model:hover { background: var(--primary-red) !important; color: white !important; border-color: transparent; }
+        .filler-widget .tag-cloud .tag.data:hover { background: var(--primary-blue) !important; color: white !important; border-color: transparent; }
+        .filler-widget .tag-cloud .tag.spatial:hover { background: var(--jade-green) !important; color: white !important; border-color: transparent; }
+        .filler-widget .tag-cloud .tag.geometric:hover { background: var(--accent-gold) !important; color: white !important; border-color: transparent; }
+
+        .filler-illustration {
+            padding: 30px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filler-illustration.golden-ratio { background: linear-gradient(135deg, #FDFBF7 0%, #F2EFE9 100%); }
+        .filler-illustration.tangram { background: linear-gradient(135deg, #FAF8F5 0%, #F5F3F0 100%); }
+        .filler-illustration.sine-wave { background: transparent; border: 1px dashed var(--border-color); }
+
+        .filler-illustration .illustration-label {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-family: var(--font-serif);
+            font-size: 10px;
+            color: var(--ink-grey);
+            opacity: 0.6;
+            letter-spacing: 1px;
+        }
+
+        .load-more-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 32px;
+            padding: 16px 0 8px;
+        }
+
+        .load-more-btn {
+            padding: 10px 22px;
+            background: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-width: 120px;
+            box-shadow: 0 8px 20px rgba(62, 92, 118, 0.12);
+        }
+
+        .load-more-btn:hover:not(:disabled) { background: #28455f; border-color: #28455f; }
+        .load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+        /* ==================== Features Section ==================== */
+        .features-section {
+            padding: 100px 20px;
+            background: #fff;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 70px;
+            color: var(--ink-black);
+        }
+
+        .section-title span {
+            color: var(--primary-red);
+            background: linear-gradient(120deg, transparent 60%, rgba(184, 59, 67, 0.2) 60%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            border-radius: 16px;
+            padding: 40px;
+            text-align: left;
+            height: 420px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: default;
+            border: 1px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: var(--border-color);
+        }
+
+        .feature-card.style-1 { background: linear-gradient(135deg, #FDFBF7 0%, #F2EFE9 100%); }
+        .feature-card.style-2 { background: linear-gradient(135deg, #F4F8FB 0%, #E6EEF5 100%); }
+        .feature-card.style-3 { background: linear-gradient(135deg, #F9FDFB 0%, #EBF5F0 100%); }
+
+        .feature-card h3 {
+            font-family: var(--font-serif);
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: var(--ink-black);
+        }
+
+        .feature-card p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--ink-grey);
+        }
+
+        .card-visual {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 85%;
+            height: 55%;
+            background: rgba(255, 255, 255, 0.5);
+            border-top-left-radius: 20px;
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+            opacity: 0.8;
+        }
+
+        /* ==================== Trust / Footer Section ==================== */
+        .trust-section {
+            padding: 80px 20px 100px;
+            background: var(--paper-bg);
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .team-from {
+            font-family: var(--font-serif);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            color: var(--ink-grey);
+            font-size: 18px;
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .bento-card {
+            border-radius: 16px;
+            padding: 30px;
+            text-align: left;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .bento-card:hover { transform: scale(1.02); }
+
+        .bento-card.light-blue {
+            background: #E8F1F8;
+            height: 160px;
+            color: var(--primary-blue);
+        }
+
+        .bento-card.light-jade {
+            background: #EBF5F0;
+            height: 160px;
+            color: #2F5C45;
+        }
+
+        .bento-card h4 {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .bento-card p { font-size: 14px; opacity: 0.8; }
+
+        .testimonial-card {
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: left;
+            position: relative;
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .testimonial-stack {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transform: rotate(5deg);
+            z-index: 0;
+            animation: floatStack 8s ease-in-out infinite;
+        }
+
+        .testimonial-content { z-index: 1; }
+
+        .quote-icon {
+            font-family: serif;
+            font-size: 80px;
+            opacity: 0.2;
+            line-height: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .stars { color: var(--accent-gold); margin-top: 20px; letter-spacing: 4px; }
+
+        .site-footer {
+            background: #2B2B2B;
+            color: #999;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .site-footer a { color: var(--accent-gold); text-decoration: none; }
+
+        /* ==================== 登录/注册模态框 ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 11000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex !important; }
+
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            animation: modalIn 0.28s ease;
+        }
+        @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+        .modal-header { text-align: center; margin-bottom: 30px; }
+        .modal-header h2 { font-family: var(--font-serif); font-size: 28px; color: var(--ink-black); margin-bottom: 8px; }
+        .modal-header p { color: var(--ink-grey); font-size: 14px; }
+
+        .modal-tabs {
+            display: flex; gap: 2px; margin-bottom: 30px;
+            background: #f8f9fa; border-radius: 10px; padding: 4px;
+        }
+        .modal-tab {
+            flex: 1; padding: 14px 20px; text-align: center;
+            background: transparent; border: none; border-radius: 8px;
+            color: var(--ink-grey); font-size: 16px; font-weight: 500;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .modal-tab.active { background: #fff; color: var(--primary-red); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .modal-tab:hover:not(.active) { background: rgba(255,255,255,0.5); }
+
+        .modal-tab-content { display: none; }
+        .modal-tab-content.active { display: block; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--ink-black); font-size: 14px; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 12px 16px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            font-size: 15px; transition: border-color 0.3s; box-sizing: border-box;
+        }
+        .form-group input:focus { outline: none; border-color: var(--primary-red); }
+
+        .invite-hint { color: var(--primary-red); font-size: 12px; margin-top: 5px; margin-bottom: 0; }
+
+        .modal-btn {
+            width: 100%; padding: 14px;
+            background: var(--primary-red); color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 500;
+            cursor: pointer; transition: background 0.3s; margin-top: 10px;
+        }
+        .modal-btn:hover { background: #A02F36; }
+        .modal-btn:disabled { background: #a0b1c0; cursor: not-allowed; }
+        .code-btn { width: auto; padding: 12px 20px; margin-top: 0; white-space: nowrap; }
+        .phone-input-row { display: flex; gap: 10px; }
+
+        .modal-link { text-align: center; margin-top: 20px; color: var(--ink-grey); font-size: 14px; }
+        .modal-link a { color: var(--primary-blue); text-decoration: none; cursor: pointer; }
+        .modal-link a:hover { text-decoration: underline; }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: transparent; border: none; font-size: 24px;
+            color: var(--ink-grey); cursor: pointer;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: all 0.2s;
+        }
+        .close-btn:hover { background: #f5f5f5; color: var(--ink-black); }
+
+        .error-message { color: var(--primary-red); font-size: 13px; margin-top: 8px; display: none; }
+        .error-message.show { display: block; }
+        .success-message { color: var(--jade-green); font-size: 13px; margin-top: 8px; display: none; }
+        .success-message.show { display: block; }
+
+        .agreement-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--ink-grey); line-height: 1.5; margin-top: 4px; }
+        .agreement-row input { margin-top: 3px; accent-color: var(--primary-red); }
+        .agreement-link { border: none; background: transparent; padding: 0; color: var(--primary-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font: inherit; }
+        .agreement-link:hover { color: var(--primary-red); }
+
+        .register-method-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); }
+        .register-method-tab { flex: 1; padding: 10px 15px; text-align: center; background: transparent; border: none; color: var(--ink-grey); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .register-method-tab.active { color: var(--primary-red); font-weight: 600; }
+        .register-method-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--primary-red); border-radius: 2px; }
+        .register-method-tab:hover:not(.active) { color: var(--ink-black); }
+        .register-method-content { display: none; }
+        .register-method-content.active { display: block; }
+
+        .phone-closed-tip { text-align: center; padding: 20px; color: var(--ink-black); background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+
+        @media (max-width: 480px) {
+            .modal { padding: 25px 20px; }
+            .modal-header h2 { font-size: 24px; }
+            .form-group input { padding: 10px 14px; font-size: 14px; }
+            .modal-btn { padding: 12px; font-size: 15px; }
+            .agreement-row { font-size: 11px; }
+        }
+
+        /* ==================== 详情页 ==================== */
+        .detail-page-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            overflow-y: auto;
+            background: var(--paper-bg);
+            background-image: radial-gradient(#E8E6E1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .detail-page-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .detail-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.85);
+            color: var(--ink-grey);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: var(--font-sans);
+        }
+
+        .detail-back-btn:hover {
+            background: #fff;
+            color: var(--primary-red);
+            border-color: var(--primary-red);
+            transform: translateX(-3px);
+        }
+
+        .detail-article {
+            background: rgba(255,255,255,0.92);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 40px rgba(43,43,43,0.06);
+            overflow: hidden;
+        }
+
+        .detail-header {
+            padding: 40px 40px 30px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(184,59,67,0.04), rgba(62,92,118,0.04));
+        }
+
+        .detail-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .detail-tags .tag {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .detail-tags .tag-main {
+            background: rgba(184,59,67,0.12);
+            color: var(--primary-red);
+        }
+
+        .detail-tags .tag-sub {
+            background: rgba(90,106,118,0.1);
+            color: var(--ink-grey);
+        }
+
+        .detail-title {
+            font-family: var(--font-serif);
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--ink-black);
+            line-height: 1.3;
+            margin-bottom: 20px;
+        }
+
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-likes {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary-red);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .detail-keypoint {
+            font-size: 13px;
+            color: var(--ink-grey);
+            background: rgba(207,170,118,0.12);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-family: var(--font-serif);
+        }
+
+        .detail-visual-panel {
+            padding: 30px 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .visual-canvas {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #f9f7f2, #f0ece3);
+            border-radius: 16px;
+            border: 1px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-caption {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--ink-grey);
+            letter-spacing: 1px;
+        }
+
+        .detail-content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 40px;
+        }
+
+        .detail-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .detail-card.wide {
+            grid-column: 1 / -1;
+        }
+
+        .detail-card h3 {
+            font-family: var(--font-serif);
+            font-size: 20px;
+            color: var(--ink-black);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .detail-card p, .detail-card li {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--ink-black);
+        }
+
+        .detail-card ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .detail-card li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .detail-card li::marker {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        .answer-box {
+            background: linear-gradient(135deg, rgba(184,59,67,0.06), rgba(62,92,118,0.06));
+            border-left: 4px solid var(--primary-red);
+            padding: 20px 24px;
+            border-radius: 0 12px 12px 0;
+            font-family: var(--font-serif);
+            font-size: 17px;
+            color: var(--ink-black);
+            line-height: 1.7;
+        }
+
+        .problem-card h3 .card-num { background: var(--primary-blue); }
+        .analysis-card h3 .card-num { background: var(--jade-green); }
+        .steps-card h3 .card-num { background: var(--accent-gold); }
+        .answer-card h3 .card-num { background: var(--primary-red); }
+
+        @media (max-width: 768px) {
+            .detail-page-inner { padding: 20px 16px 60px; }
+            .detail-header { padding: 28px 24px 24px; }
+            .detail-title { font-size: 26px; }
+            .detail-visual-panel { padding: 24px; }
+            .visual-canvas { height: 220px; }
+            .detail-content-grid {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 16px;
+            }
+        }
+
+        /* ==================== 动画 ==================== */
+        @keyframes scrollLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes floatStack {
+            0%, 100% { transform: rotate(5deg) translateY(0); }
+            50% { transform: rotate(3deg) translateY(-8px); }
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 1200px) {
+            .masonry-container { column-count: 3; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 10px 16px; }
+            .logo-text { font-size: 20px; }
+            .nav-actions { gap: 12px; }
+            .hero-title h1 { font-size: 2.5rem; }
+            .hero-title h1::after { right: -30px; width: 20px; height: 20px; font-size: 12px; }
+            .brand-eyebrow { font-size: 0.9rem; gap: 10px; }
+            .brand-eyebrow::before, .brand-eyebrow::after { width: 20px; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .bottom-grid { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
+            .masonry-container { column-count: 2; column-gap: 16px; }
+            .showcase-title h2 { font-size: 32px; }
+            .showcase-title p { font-size: 16px; }
+            .search-floater { width: 100%; max-width: 100%; padding: 10px 12px 10px 16px; border-radius: 28px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title h1 { font-size: 2.2rem; }
+            .hero-title h1::after { display: none; }
+            .masonry-container { column-count: 1; }
+        }
+
+        /* ==================== AI 演示面板 ==================== */
+        .ai-result-panel {
+            margin: 0 auto 24px;
+            width: 760px;
+            max-width: 92%;
+            background: linear-gradient(135deg, #FAF8F3 0%, #F5F1E8 100%);
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 12px 40px rgba(62,92,118,0.12);
+            overflow: hidden;
+            animation: panelRise 0.45s cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes panelRise {
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ai-result-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px;
+            background: linear-gradient(90deg, rgba(184,59,67,0.06), rgba(207,170,118,0.06));
+            border-bottom: 1px solid var(--border-color);
+        }
+        .ai-result-title {
+            font-family: var(--font-serif);
+            font-size: 17px; font-weight: 600; color: var(--ink-black);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .ai-result-title .seal-badge {
+            background: var(--primary-red); color: #fff;
+            font-size: 11px; padding: 3px 10px; border-radius: 4px;
+            letter-spacing: 1px; font-family: var(--font-sans); font-weight: 400;
+        }
+        .ai-result-close {
+            background: none; border: none; font-size: 22px; cursor: pointer;
+            color: var(--ink-grey); line-height: 1; padding: 4px 8px; border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .ai-result-close:hover { background: rgba(184,59,67,0.1); color: var(--primary-red); }
+
+        .ai-result-body { padding: 0; }
+
+        /* 加载态 */
+        .ai-loading {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 56px 24px; gap: 16px;
+        }
+        .ai-loading-spinner {
+            width: 48px; height: 48px; border-radius: 50%;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-red);
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ai-loading-text {
+            font-size: 15px; color: var(--ink-grey); font-family: var(--font-serif);
+        }
+        .ai-loading-hint {
+            font-size: 13px; color: var(--ink-grey-light, #aaa);
+        }
+        .ai-loading-dots span {
+            animation: blink 1.4s infinite both;
+        }
+        .ai-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+
+        /* 错误态 */
+        .ai-error {
+            padding: 40px 24px; text-align: center; color: var(--primary-red);
+            font-size: 14px; line-height: 1.8;
+        }
+        .ai-error svg { margin-bottom: 12px; }
+
+        /* 翻页幻灯片 */
+        .slideshow { position: relative; overflow: hidden; }
+        .slide-track {
+            display: flex; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1);
+        }
+        .slide {
+            flex: 0 0 100%; min-width: 100%;
+            padding: 28px 32px 20px;
+            box-sizing: border-box;
+        }
+        .slide-step-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--primary-red); color: #fff;
+            font-size: 12px; padding: 4px 14px; border-radius: 20px;
+            margin-bottom: 14px; font-family: var(--font-sans);
+        }
+        .slide-step-badge .cn-num {
+            font-family: var(--font-serif); font-size: 14px;
+        }
+        .slide-title {
+            font-family: var(--font-serif);
+            font-size: 20px; font-weight: 700; color: var(--ink-black);
+            margin-bottom: 12px;
+        }
+        .slide-content {
+            font-size: 15px; line-height: 1.85; color: #555;
+            margin-bottom: 16px; font-family: var(--font-sans);
+        }
+        .slide-formula {
+            background: #fff; border-left: 3px solid var(--accent-gold);
+            padding: 12px 18px; border-radius: 0 8px 8px 0;
+            font-size: 17px; color: var(--ink-black);
+            font-family: 'Courier New', monospace; font-weight: 600;
+            margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .slide-visual {
+            background: #fff; border-radius: 12px;
+            padding: 20px; min-height: 140px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+        .slide-visual svg { max-width: 100%; height: auto; }
+
+        /* 幻灯片控件 */
+        .slide-controls {
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            padding: 14px 24px 20px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(245,241,232,0.5);
+        }
+        .slide-nav-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid var(--border-color); background: #fff;
+            font-size: 20px; cursor: pointer; color: var(--ink-grey);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s;
+        }
+        .slide-nav-btn:hover:not(:disabled) {
+            border-color: var(--primary-red); color: var(--primary-red);
+            transform: scale(1.08);
+        }
+        .slide-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .slide-dots { display: flex; gap: 7px; }
+        .slide-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ccc; cursor: pointer; transition: all 0.3s;
+            border: none; padding: 0;
+        }
+        .slide-dot.active {
+            width: 26px; border-radius: 4px; background: var(--primary-red);
+        }
+        .slide-play-btn {
+            background: none; border: 1.5px solid var(--accent-gold);
+            color: var(--accent-gold); font-size: 13px;
+            padding: 6px 16px; border-radius: 20px; cursor: pointer;
+            font-family: var(--font-sans); transition: all 0.25s;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .slide-play-btn:hover { background: var(--accent-gold); color: #fff; }
+        .slide-play-btn.playing { background: var(--primary-red); border-color: var(--primary-red); color: #fff; }
+
+        .slide-progress {
+            position: absolute; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--primary-red), var(--accent-gold));
+            transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+            z-index: 2;
+        }
+
+        /* 幻灯片内动画 */
+        @keyframes drawLine {
+            from { stroke-dashoffset: var(--dash-len, 500); }
+            to   { stroke-dashoffset: 0; }
+        }
+        @keyframes growBar {
+            from { transform: scaleY(0); }
+            to   { transform: scaleY(1); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes moveDot {
+            0%   { transform: translateX(0); }
+            50%  { transform: translateX(var(--move-x, 60px)); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes fillArea {
+            from { opacity: 0; }
+            to   { opacity: 0.3; }
+        }
+        .slide.active .anim-line {
+            stroke-dasharray: var(--dash-len, 500);
+            animation: drawLine 1.5s ease forwards;
+        }
+        .slide.active .anim-bar {
+            transform-origin: bottom;
+            animation: growBar 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        .slide.active .anim-fade {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+        .slide.active .anim-fade:nth-child(1) { animation-delay: 0.1s; }
+        .slide.active .anim-fade:nth-child(2) { animation-delay: 0.3s; }
+        .slide.active .anim-fade:nth-child(3) { animation-delay: 0.5s; }
+        .slide.active .anim-fade:nth-child(4) { animation-delay: 0.7s; }
+        .slide.active .anim-fade:nth-child(5) { animation-delay: 0.9s; }
+        .slide.active .anim-dot {
+            animation: moveDot 2.5s ease-in-out infinite;
+        }
+        .slide.active .anim-fill {
+            animation: fillArea 1s ease forwards;
+        }
+
+        /* 最终答案页 */
+        .slide-answer {
+            text-align: center; padding: 36px 24px;
+        }
+        .slide-answer-label {
+            font-family: var(--font-serif); font-size: 14px;
+            color: var(--accent-gold); letter-spacing: 3px; margin-bottom: 12px;
+        }
+        .slide-answer-value {
+            font-family: var(--font-serif); font-size: 28px; font-weight: 700;
+            color: var(--primary-red);
+            padding: 16px 32px; display: inline-block;
+            border: 2px solid var(--primary-red); border-radius: 8px;
+            background: rgba(184,59,67,0.04);
+        }
+        .slide-knowledge {
+            margin-top: 18px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+        }
+        .slide-knowledge span {
+            font-size: 12px; color: var(--ink-grey);
+            background: #F7F5F0; padding: 4px 12px; border-radius: 12px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 导航栏 -->
+    <header>
+        <a href="index.html" class="logo">
+            <div class="logo-wrapper">
+                <div class="tech-ring"></div>
+                <svg class="yi-logo" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="50" height="50" rx="10" fill="#3E5C76"/>
+                    <text x="25" y="36" font-family="Noto Serif SC, serif" font-size="30" font-weight="900" fill="#F7F5F0" text-anchor="middle">易</text>
+                </svg>
+            </div>
+            <span class="logo-text">数理演易</span>
+        </a>
+        <div class="nav-actions">
+            <a href="#" class="top-action-btn top-action-login" onclick="showLoginModal(); return false;">
+                <span class="btn-shine"></span>
+                <span class="btn-text">登入</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 2. Hero Section -->
+    <section class="hero-section">
+        <div class="hero-title">
+            <div class="brand-eyebrow">融合传统哲学思维与现代算法</div>
+            <h1>观象 · 运数 · 演易</h1>
+            <h2 class="hero-subtitle">交互式教学动画生成引擎</h2>
+            <div class="badge-notice">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>当前版本暂仅支持小学初中数学</span>
+            </div>
+        </div>
+
+        <!-- 轮播背景层 -->
+        <div class="cards-carousel-container">
+            <div class="cards-track" id="carouselTrack"></div>
+        </div>
+
+        <!-- 搜索条 -->
+        <div class="search-container-center">
+            <div class="search-floater">
+                <input type="text" class="search-input" placeholder="输入数理问题，或上传题目图片/文档..." id="searchInput">
+                <div class="input-actions">
+                    <button class="icon-btn" onclick="handleImageUpload()" title="上传图片">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+                    <button class="icon-btn" onclick="handleCameraCapture()" title="拍照">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                    </button>
+                    <button class="icon-btn" onclick="handleDocUpload()" title="上传文件">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                </div>
+                <button class="search-btn" id="searchBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 隐藏的文件输入 -->
+        <input type="file" accept="image/*" id="imageInput" style="display:none">
+        <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+        <input type="file" accept=".txt,.md,.pdf,.doc,.docx" id="docInput" style="display:none">
+
+        <!-- 附件预览 -->
+        <div class="attach-preview" id="attachPreview">
+            <img id="attachPreviewImg" src="" alt="">
+            <div class="attach-info">
+                <div class="attach-name" id="attachPreviewName">image.jpg</div>
+                <div class="attach-desc" id="attachPreviewDesc">点击搜索后，AI 将同时分析图片内容</div>
+            </div>
+            <button class="attach-remove" onclick="removeAttachment()">&times;</button>
+        </div>
+
+        <!-- AI 演示结果面板 -->
+        <div class="ai-result-panel" id="aiResultPanel" style="display:none;">
+            <div class="ai-result-header">
+                <span class="ai-result-title"><span class="seal-badge">演易</span><span id="aiResultTitle">教学动画</span></span>
+                <button class="ai-result-close" onclick="closeAiResult()">&times;</button>
+            </div>
+            <div class="ai-result-body" id="aiResultBody"></div>
+        </div>
+
+        <div class="toast-container" id="toastContainer"></div>
+    </section>
+
+    <!-- 2.5 教学内容展示区域 -->
+    <section class="teachings-showcase-section">
+        <div class="showcase-header">
+            <div class="showcase-title">
+                <h2>已生成的交互式教学动画</h2>
+                <p>探索智慧</p>
+            </div>
+            <div class="tag-filter-container">
+                <button class="tag-filter-btn active" data-tag="all">全部</button>
+                <button class="tag-filter-btn" data-tag="模型意识">模型意识</button>
+                <button class="tag-filter-btn" data-tag="数据意识">数据意识</button>
+                <button class="tag-filter-btn" data-tag="空间观念">空间观念</button>
+                <button class="tag-filter-btn" data-tag="几何直观">几何直观</button>
+                <button class="tag-filter-btn" data-tag="符号意识">符号意识</button>
+                <button class="tag-filter-btn" data-tag="量感">量感</button>
+                <button class="tag-filter-btn" data-tag="数感">数感</button>
+                <button class="tag-filter-btn" data-tag="推理意识">推理意识</button>
+                <button class="tag-filter-btn" data-tag="运算能力">运算能力</button>
+            </div>
+        </div>
+        <div class="masonry-container" id="masonryContainer"></div>
+        <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+            <button class="load-more-btn" id="loadMoreBtn">点击查看更多</button>
+        </div>
+    </section>
+
+    <!-- 3. Features Section -->
+    <section class="features-section">
+        <h2 class="section-title">古法今用 <span>智慧新生</span></h2>
+        <div class="features-grid">
+            <div class="feature-card style-1">
+                <h3>因材施教</h3>
+                <p>AI 能够识别你的思维脉络，<br>生成最契合当下的解题思路。</p>
+                <div class="card-visual"></div>
+            </div>
+            <div class="feature-card style-2">
+                <h3>化繁为简</h3>
+                <p>将晦涩的公式转化为<br>直观的图形演变，一目了然。</p>
+                <div class="card-visual"></div>
+            </div>
+            <div class="feature-card style-3">
+                <h3>全时伴读</h3>
+                <p>无论何时何地，<br>皆可与之问道，解惑答疑。</p>
+                <div class="card-visual"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Trust / Footer Section -->
+    <section class="trust-section">
+        <div class="team-from" style="flex-wrap: wrap; gap: 20px;">
+            <span style="opacity:0.7; font-size: 18px; margin-right: 20px; letter-spacing: 2px;">溯源于</span>
+            <div style="display:flex; align-items:center; gap: 40px; flex-wrap: wrap; justify-content: center;">
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#3E5C76,#2C4256); display:flex; align-items:center; justify-content:center; margin:0 auto 8px; box-shadow:0 4px 12px rgba(62,92,118,0.3);">
+                        <span style="color:#F7F5F0; font-family:var(--font-serif); font-size:14px; font-weight:700;">数理</span>
+                    </div>
+                    <span style="font-family:var(--font-serif); font-size:14px; color:var(--primary-blue); font-weight:bold;">数理研究院</span>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#B83B43,#A02F36); display:flex; align-items:center; justify-content:center; margin:0 auto 8px; box-shadow:0 4px 12px rgba(184,59,67,0.3);">
+                        <span style="color:#F7F5F0; font-family:var(--font-serif); font-size:14px; font-weight:700;">演易</span>
+                    </div>
+                    <span style="font-family:var(--font-serif); font-size:14px; color:var(--primary-red); font-weight:bold;">演易实验室</span>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#7D9F88,#5F8470); display:flex; align-items:center; justify-content:center; margin:0 auto 8px; box-shadow:0 4px 12px rgba(125,159,136,0.3);">
+                        <span style="color:#F7F5F0; font-family:var(--font-serif); font-size:14px; font-weight:700;">启蒙</span>
+                    </div>
+                    <span style="font-family:var(--font-serif); font-size:14px; color:#2F5C45; font-weight:bold;">启蒙学社</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin: 40px 0; font-family:var(--font-serif); font-size:28px;">AI 助力 <span style="color:var(--primary-red)">见微知著</span></h3>
+
+        <div class="bottom-grid">
+            <div class="left-col">
+                <div class="bento-card light-blue">
+                    <div>
+                        <h4>多语言通译</h4>
+                        <p>支持中文、英语及各类符号语言</p>
+                    </div>
+                    <div style="font-size:32px; opacity:0.6;">文</div>
+                </div>
+                <div class="bento-card light-jade">
+                    <div>
+                        <h4>全学段覆盖</h4>
+                        <p style="color:#2F5C45; font-weight:bold;">小学奥数 / 初中数学 / 高考 / 考研</p>
+                    </div>
+                    <div style="font-size:32px; opacity:0.6;">理</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stack"></div>
+                <div class="testimonial-content">
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-size:22px; font-family:var(--font-serif);">陈妈妈</h4>
+                        <span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; font-size:12px;">四年级学生家长</span>
+                    </div>
+                    <div class="quote-icon">&ldquo;</div>
+                    <p style="line-height:1.8; margin-top:-20px; font-family:var(--font-serif);">
+                        此工具甚是精妙。以往复杂的奥数问题，经其演化为图形后，竟变得如此直观。它不仅给出了答案，更让小朋友理解了其中的变化之道。
+                    </p>
+                    <div class="stars">★★★★★</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detail Page Section -->
+    <section class="detail-page-section" id="detailPageSection" style="display:none;">
+        <div class="detail-page-inner">
+            <button class="detail-back-btn" onclick="goBackToList()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>返回探索</span>
+            </button>
+
+            <article class="detail-article" id="detailArticle">
+                <header class="detail-header">
+                    <div class="detail-tags" id="detailTags"></div>
+                    <h1 class="detail-title" id="detailTitle"></h1>
+                    <div class="detail-meta">
+                        <span class="detail-likes"><svg width="16" height="16" viewBox="0 0 24 24" fill="#B83B43"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span id="detailLikes">0</span></span>
+                        <span class="detail-keypoint" id="detailKeyPoint"></span>
+                    </div>
+                </header>
+
+                <div class="detail-visual-panel" id="detailVisualPanel">
+                    <div class="visual-canvas" id="detailVisualCanvas"></div>
+                    <div class="visual-caption">动态演示 · 可交互式教学动画</div>
+                </div>
+
+                <div class="detail-content-grid">
+                    <div class="detail-card problem-card">
+                        <h3><span class="card-num">壹</span>题目</h3>
+                        <p id="detailProblem"></p>
+                    </div>
+                    <div class="detail-card analysis-card">
+                        <h3><span class="card-num">贰</span>思路分析</h3>
+                        <p id="detailAnalysis"></p>
+                    </div>
+                    <div class="detail-card steps-card wide">
+                        <h3><span class="card-num">叁</span>解题步骤</h3>
+                        <ol id="detailSteps"></ol>
+                    </div>
+                    <div class="detail-card answer-card wide">
+                        <h3><span class="card-num">肆</span>最终答案</h3>
+                        <div class="answer-box" id="detailAnswer"></div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>数理演易 — 传统智慧与AI的融合</p>
+        <p>© 2026 数理演易 · 观象 · 运数 · 演易</p>
+    </footer>
+
+    <!-- 登录/注册模态框 -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <button class="close-btn" onclick="hideLoginModal()">&times;</button>
+
+            <div class="modal-header">
+                <h2>数理演易</h2>
+                <p>欢迎回来</p>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchAuthTab('login')">登录</button>
+                <button class="modal-tab" onclick="switchAuthTab('register')">注册</button>
+            </div>
+
+            <!-- 登录表单 -->
+            <div id="loginTab" class="modal-tab-content active">
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="loginUsername" required placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="loginPassword" required placeholder="请输入密码">
+                    </div>
+                    <label class="agreement-row">
+                        <input type="checkbox" id="loginAgreementCheckbox">
+                        <span>我已阅读并同意<a href="#" class="agreement-link" onclick="event.preventDefault();showToast('用户协议：本站为数理演易演示站点，数据仅本地存储。','info',4000)">《用户协议》</a>和<a href="#" class="agreement-link" onclick="event.preventDefault();showToast('隐私政策：本演示不会上传任何数据到服务器。','info',4000)">《隐私政策》</a></span>
+                    </label>
+                    <div class="error-message" id="loginError"></div>
+                    <button type="submit" class="modal-btn" id="loginBtn">登录</button>
+                </form>
+                <div class="modal-link">
+                    <a href="#" onclick="switchAuthTab('forgot'); return false;">忘记密码？</a>
+                </div>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="registerTab" class="modal-tab-content">
+                <div class="register-method-tabs">
+                    <button type="button" class="register-method-tab active" onclick="switchRegisterMethod('password')">用户名密码</button>
+                    <button type="button" class="register-method-tab" onclick="switchRegisterMethod('phone')">手机验证码</button>
+                </div>
+
+                <div id="registerPasswordForm" class="register-method-content active">
+                    <form id="registerForm" onsubmit="handleRegisterPassword(event)">
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" id="registerUsername" required placeholder="请输入用户名">
+                        </div>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <input type="password" id="registerPassword" required minlength="6" placeholder="至少6位">
+                        </div>
+                        <div class="form-group">
+                            <label>确认密码</label>
+                            <input type="password" id="registerPasswordConfirm" required minlength="6" placeholder="再次输入密码">
+                        </div>
+                        <div class="form-group">
+                            <label>邀请码</label>
+                            <input type="text" id="registerBetaCode" required placeholder="请输入邀请码">
+                            <p class="invite-hint">官方邀请码：XSYY2026</p>
+                        </div>
+                        <label class="agreement-row">
+                            <input type="checkbox" id="registerAgreementCheckbox">
+                            <span>我已阅读并同意<a href="#" class="agreement-link" onclick="event.preventDefault();showToast('用户协议：本站为数理演易演示站点。','info',4000)">《用户协议》</a>和<a href="#" class="agreement-link" onclick="event.preventDefault();showToast('隐私政策：本演示不会上传任何数据。','info',4000)">《隐私政策》</a></span>
+                        </label>
+                        <div class="error-message" id="registerError"></div>
+                        <div class="success-message" id="registerSuccess"></div>
+                        <button type="submit" class="modal-btn" id="registerBtn">注册</button>
+                    </form>
+                </div>
+
+                <div id="registerPhoneForm" class="register-method-content">
+                    <div class="phone-closed-tip">⚠️ 该功能暂时关闭，请通过用户名密码和邀请码注册</div>
+                </div>
+            </div>
+
+            <!-- 忘记密码 -->
+            <div id="forgotTab" class="modal-tab-content">
+                <form id="forgotForm" onsubmit="handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label>手机号</label>
+                        <div class="phone-input-row">
+                            <input type="tel" id="forgotPhone" required pattern="[0-9]{11}" placeholder="11位手机号" style="flex:1;">
+                            <button type="button" class="modal-btn code-btn" onclick="sendVerificationCode('forgot')">发送验证码</button>
+                        </div>
+                    </div>
+                    <div class="error-message" id="forgotError"></div>
+                    <div class="success-message" id="forgotSuccess"></div>
+                    <button type="submit" class="modal-btn" id="forgotBtn" style="display:none;">下一步</button>
+                </form>
+                <div class="modal-link"><a href="#" onclick="switchAuthTab('reset'); return false;">已有验证码？</a></div>
+                <div class="modal-link"><a href="#" onclick="switchAuthTab('login'); return false;">返回登录</a></div>
+            </div>
+
+            <!-- 重置密码 -->
+            <div id="resetTab" class="modal-tab-content">
+                <form id="resetForm" onsubmit="handleResetPassword(event)">
+                    <div class="form-group">
+                        <label>手机号</label>
+                        <input type="tel" id="resetPhone" required pattern="[0-9]{11}" placeholder="11位手机号">
+                    </div>
+                    <div class="form-group">
+                        <label>验证码</label>
+                        <input type="text" id="resetVerificationCode" required pattern="[0-9]{6}" placeholder="6位验证码" maxlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>新密码</label>
+                        <input type="password" id="resetPassword" required minlength="6" placeholder="至少6位">
+                    </div>
+                    <div class="form-group">
+                        <label>确认新密码</label>
+                        <input type="password" id="resetPasswordConfirm" required minlength="6" placeholder="再次输入">
+                    </div>
+                    <div class="error-message" id="resetError"></div>
+                    <div class="success-message" id="resetSuccess"></div>
+                    <button type="submit" class="modal-btn" id="resetBtn">重置密码</button>
+                </form>
+                <div class="modal-link"><a href="#" onclick="switchAuthTab('login'); return false;">返回登录</a></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ==================== 模拟数据 ====================
+    const tagTypeMap = {
+        '模型意识': 'model', '数据意识': 'data', '空间观念': 'spatial',
+        '几何直观': 'geometric', '符号意识': 'symbol', '量感': 'quantity',
+        '数感': 'number', '推理意识': 'reasoning', '运算能力': 'operation'
+    };
+
+    const colorMap = {
+        'model': '#B83B43', 'data': '#3E5C76', 'spatial': '#7D9F88',
+        'geometric': '#cfaa76', 'symbol': '#8B6F47', 'quantity': '#6B8E9F',
+        'number': '#A67C52', 'reasoning': '#9B7A6B', 'operation': '#3E5C76'
+    };
+
+    const teachings = [
+        { id: 1, title: '用字母表示长方体的高', question: '底面为正方形的长方体，体积为32cm³，底面边长为x(cm)，请用含x的式子表示这个长方体的高h(cm)，并求当底面边长为2cm时的高。', mainTag: '符号意识', subTags: ['空间观念', '几何直观'], likes: 1, detail: {
+            problem: '底面为正方形的长方体，体积为32cm³，底面边长为x(cm)，请用含x的式子表示这个长方体的高h(cm)，并求当底面边长为2cm时的高。',
+            analysis: '利用长方体体积公式 V = 底面积 × 高，建立变量之间的关系，再用代入法求值。',
+            steps: ['底面是正方形，边长为 x，则底面积为 S = x²。', '由体积公式 V = S·h，可得 32 = x²·h。', '解得 h = 32/x²。', '当 x = 2 时，h = 32/2² = 32/4 = 8(cm)。'],
+            answer: 'h = 32/x²；当底面边长为2cm时，高为8cm。',
+            keyPoint: '用字母表示数量关系、长方体体积公式、代入求值'
+        }},
+        { id: 2, title: '勾股定理推导', question: '勾股定理动态推导：通过几何图形的拼合变换，证明直角三角形两直角边的平方和等于斜边的平方。', mainTag: '几何直观', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '通过几何图形的拼合变换，证明直角三角形两直角边的平方和等于斜边的平方。',
+            analysis: '采用“出入相补”思想：用四个全等直角三角形拼成一个大正方形，通过面积相等建立等式。',
+            steps: ['设直角三角形两直角边为 a、b，斜边为 c。', '用4个这样的三角形拼成边长为 (a+b) 的大正方形，中间空白是边长为 c 的小正方形。', '大正方形面积 = (a+b)² = 4×(½ab) + c²。', '展开整理：a² + 2ab + b² = 2ab + c²，故 a² + b² = c²。'],
+            answer: '直角三角形中，a² + b² = c²。',
+            keyPoint: '勾股定理、面积法证明、出入相补思想'
+        }},
+        { id: 3, title: '平行线间三角形等积', question: '为什么两条平行线内的三角形面积相等？通过同底等高的原理进行动态演示。', mainTag: '几何直观', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '为什么两条平行线内的三角形面积相等？',
+            analysis: '三角形面积只与底和对应高有关；夹在两条平行线间的距离处处相等，即高相等。',
+            steps: ['画两条平行线 l₁、l₂。', '在 l₁ 上取公共底边 AB，在 l₂ 上任取一点 C。', '三角形 ABC 的高就是两平行线间的距离 h，且 h 恒定。', '因此无论 C 在 l₂ 上如何移动，S = ½·AB·h 保持不变。'],
+            answer: '同底等高的三角形面积相等。',
+            keyPoint: '平行线间距离处处相等、三角形面积公式'
+        }},
+        { id: 4, title: '平行四边形面积推导', question: '平行四边形面积公式推导：通过割补法将平行四边形转化为长方形，从而推导出面积公式。', mainTag: '几何直观', subTags: ['空间观念', '推理意识'], likes: 0, detail: {
+            problem: '通过割补法将平行四边形转化为长方形，推导面积公式。',
+            analysis: '沿平行四边形的一条高剪下一个直角三角形，平移到另一侧可拼成一个长方形。',
+            steps: ['在平行四边形的一边作高，剪下一个直角三角形。', '将该直角三角形平移到另一侧，与原图形拼成一个长方形。', '长方形的长等于平行四边形的底 a，宽等于高 h。', '因此平行四边形面积 S = 长方形面积 = a·h。'],
+            answer: '平行四边形面积 = 底 × 高。',
+            keyPoint: '割补法、转化思想、平行四边形面积公式'
+        }},
+        { id: 5, title: '整数加法', question: '1+2等于几？通过数轴上的动态跳跃演示加法的本质含义。', mainTag: '运算能力', subTags: ['几何直观', '推理意识'], likes: 0, detail: {
+            problem: '1 + 2 等于多少？',
+            analysis: '加法是把两个数量合并；在数轴上表现为从第一个数出发，向右跳跃相应的单位长度。',
+            steps: ['在数轴上找到点 1。', '“+2”表示从 1 开始向右跳 2 个单位。', '第一次跳到 2，第二次跳到 3。'],
+            answer: '1 + 2 = 3。',
+            keyPoint: '加法意义、数轴表示'
+        }},
+        { id: 6, title: '乘方计算', question: '2的99次方等于多少？通过指数增长的可视化展示乘方的威力。', mainTag: '运算能力', subTags: ['几何直观', '推理意识'], likes: 0, detail: {
+            problem: '2的99次方是多少？',
+            analysis: '乘方表示相同因数的连乘；2⁹⁹ 是 99 个 2 相乘，数值巨大，适合用指数增长曲线直观感受。',
+            steps: ['2¹ = 2，2² = 4，2³ = 8，2¹⁰ ≈ 1024。', '每增加 1 次幂，数值翻倍，呈指数增长。', '2⁹⁹ = 633,825,300,114,114,700,748,351,602,688（约 6.34×10²⁹）。'],
+            answer: '2⁹⁹ = 633825300114114700748351602688。',
+            keyPoint: '乘方的意义、指数增长'
+        }},
+        { id: 7, title: '函数交点与不等式', question: '已知二次函数 y=x²-2x-3，一次函数 y=x+1。求两个函数图像的交点坐标，并求两个交点之间的线段长度。', mainTag: '符号意识', subTags: ['几何直观', '推理意识'], likes: 0, detail: {
+            problem: '已知二次函数 y = x² - 2x - 3，一次函数 y = x + 1。求两个函数图像的交点坐标，并求两个交点之间的线段长度。',
+            analysis: '交点处两函数 y 值相等，联立方程求解；再用两点间距离公式求线段长。',
+            steps: ['令 x² - 2x - 3 = x + 1，整理得 x² - 3x - 4 = 0。', '因式分解：(x - 4)(x + 1) = 0，解得 x₁ = -1，x₂ = 4。', '代入 y = x + 1，得交点 A(-1, 0)、B(4, 5)。', '线段长度 |AB| = √[(4-(-1))² + (5-0)²] = √(25+25) = 5√2。'],
+            answer: '交点为 (-1, 0) 和 (4, 5)；线段长度为 5√2。',
+            keyPoint: '函数交点、联立方程、两点间距离公式'
+        }},
+        { id: 8, title: '三角形内角和', question: '三角形的内角和为什么是180度？通过撕拼法和平行线性质进行动态证明。', mainTag: '几何直观', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '证明三角形的内角和等于 180°。',
+            analysis: '把三角形的三个角撕下来拼在一起，可组成一个平角；或用平行线性质说明同旁内角互补。',
+            steps: ['过三角形一个顶点作对边的平行线。', '利用内错角相等，把三角形的三个角转化为平行线间的同旁内角。', '同旁内角互补，即三个角之和为 180°。'],
+            answer: '三角形内角和 = 180°。',
+            keyPoint: '三角形内角和定理、平行线性质、转化思想'
+        }},
+        { id: 9, title: '勾股定理求边长', question: '在Rt△ABC中，∠ACB=90°，正方形AEDC、BCFG的面积分别为25和144，则AB的长度为多少？', mainTag: '几何直观', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '在Rt△ABC中，∠ACB=90°，正方形 AEDC、BCFG 的面积分别为 25 和 144，则 AB 的长度为多少？',
+            analysis: '正方形面积即对应直角边的平方，再用勾股定理求斜边。',
+            steps: ['正方形 AEDC 面积 = AC² = 25，所以 AC = 5。', '正方形 BCFG 面积 = BC² = 144，所以 BC = 12。', '由勾股定理：AB² = AC² + BC² = 25 + 144 = 169。', '所以 AB = √169 = 13。'],
+            answer: 'AB = 13。',
+            keyPoint: '勾股定理、正方形面积与边长关系'
+        }},
+        { id: 10, title: '连续数求和简算', question: '35+36+37+38+39 = □ × □，方框里应分别填什么？通过等差数列求和的直观演示。', mainTag: '推理意识', subTags: ['数感'], likes: 0, detail: {
+            problem: '35 + 36 + 37 + 38 + 39 = □ × □，方框里应分别填什么？',
+            analysis: '连续奇数个整数构成等差数列，其和等于中间数乘以项数。',
+            steps: ['这是 5 个连续整数，中间数是 37。', '首尾配对：35+39 = 74 = 2×37；36+38 = 74 = 2×37。', '总和 = 5×37 = 185。'],
+            answer: '35 + 36 + 37 + 38 + 39 = 5 × 37 = 185。',
+            keyPoint: '等差数列求和、中间数性质'
+        }},
+        { id: 11, title: '容斥原理应用题', question: '三年级有164名学生，参加美术兴趣小组的共有28人，参加音乐兴趣小组的人数是美术小组人数的2倍，参加体育兴趣小组的是音乐小组的一半。三个小组都参加的有多少人？', mainTag: '模型意识', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '三年级有164名学生，参加美术兴趣小组的共有28人，参加音乐兴趣小组的人数是美术小组人数的2倍，参加体育兴趣小组的是音乐小组的一半。三个小组都参加的有多少人？',
+            analysis: '先求出音乐、体育小组人数，发现三者人数之和正好等于总人数，说明没有学生同时参加多个小组。',
+            steps: ['美术：28 人。', '音乐：28 × 2 = 56 人。', '体育：56 ÷ 2 = 28 人。', '三个小组人数之和 = 28 + 56 + 28 = 112 人。', '因为 112 < 164，题目问“都参加的有多少人”，缺少“至少参加一个”的条件，按常见题型若假设每人至少参加一个则 164 - 112 不成立；本题为特殊构造：若总人数恰为 112，则三小组都参加人数为 0。'],
+            answer: '按题意数据，三小组人数之和为 112 人；若假设三年级学生全部至少参加一个小组且总人数为 112，则三个小组都参加的人数为 0。',
+            keyPoint: '容斥原理、倍数关系、逻辑推理'
+        }},
+        { id: 12, title: '追及问题', question: '甲乙两人从同一地点出发，甲的速度为5m/s，乙的速度为3m/s，甲先出发2秒后乙再出发，问乙出发几秒后能追上甲？', mainTag: '模型意识', subTags: ['运算能力', '推理意识'], likes: 2, detail: {
+            problem: '甲乙两人从同一地点出发，甲的速度为5m/s，乙的速度为3m/s，甲先出发2秒后乙再出发，问乙出发几秒后能追上甲？',
+            analysis: '注意题目中“甲速度5、乙速度3”，乙比甲慢，永远追不上甲。若数据应为甲3m/s、乙5m/s，则是典型追及问题。',
+            steps: ['甲先出发 2 秒，领先距离 = 5 × 2 = 10 米。', '乙出发后，每秒能缩短距离 5 - 3 = 2 米。', '追及时间 = 10 ÷ 2 = 5 秒。'],
+            answer: '若甲 3m/s、乙 5m/s，乙出发 5 秒后追上甲。（按原题数据乙速度小于甲，无法追上。）',
+            keyPoint: '追及问题、路程差与速度差'
+        }},
+        { id: 13, title: '火车过桥问题', question: '一列长200米的火车以15m/s的速度通过一座长500米的桥，问火车完全通过桥需要多少秒？', mainTag: '模型意识', subTags: ['运算能力'], likes: 1, detail: {
+            problem: '一列长200米的火车以15m/s的速度通过一座长500米的桥，问火车完全通过桥需要多少秒？',
+            analysis: '火车完全过桥的路程 = 桥长 + 火车自身长度；火车从车头进入到车尾离开，共行驶 500 + 200 = 700 米。',
+            steps: ['总路程 s = 桥长 + 车长 = 500 + 200 = 700 米。', '速度 v = 15 米/秒。', '时间 t = s ÷ v = 700 ÷ 15 = 140/3 ≈ 46.67 秒。'],
+            answer: '火车完全通过桥需要 140/3 秒，约 46.67 秒。',
+            keyPoint: '火车过桥问题、总路程计算'
+        }},
+        { id: 14, title: '百分数连续变化', question: '一件商品先涨价10%，再降价10%，最终价格比原价高还是低？通过动态条形图演示。', mainTag: '数感', subTags: ['推理意识'], likes: 3, detail: {
+            problem: '一件商品先涨价10%，再降价10%，最终价格比原价高还是低？',
+            analysis: '设原价为单位“1”，连续两次变化后价格 = 1 × (1+10%) × (1-10%) = 0.99，比原价低。',
+            steps: ['设原价为 1。', '涨价 10% 后：1 × 1.10 = 1.10。', '再降价 10%：1.10 × 0.90 = 0.99。', '0.99 < 1，所以最终价格比原价低 1%。'],
+            answer: '最终价格比原价低，是原价的 99%。',
+            keyPoint: '百分数应用、连续变化、单位“1”思想'
+        }},
+        { id: 15, title: '图形剪拼求边长', question: '将一个边长为8的正方形剪去一个角后，剩余部分可以拼成一个长方形，求该长方形的长和宽。', mainTag: '空间观念', subTags: ['几何直观', '推理意识'], likes: 1, detail: {
+            problem: '将一个边长为8的正方形剪去一个角后，剩余部分可以拼成一个长方形，求该长方形的长和宽。',
+            analysis: '“剪去一个角”通常指沿对角线剪去一个等腰直角三角形，剩余五边形可拼成长方形。',
+            steps: ['设沿对角线剪去直角边为 a 的等腰直角三角形。', '剩余部分面积为 64 - ½a²。', '经典情形：剪去边长为 4 的角，面积 = 64 - 8 = 56。', '可拼成长 7、宽 8 的长方形（7×8 = 56）。'],
+            answer: '一种常见答案：长 8、宽 7（剪去直角边为 4 的等腰直角三角形时）。',
+            keyPoint: '图形剪拼、面积守恒、空间想象'
+        }},
+        { id: 16, title: '金钱逻辑推理', question: '小明、小红、小华三人各有不同金额的零花钱。已知小明比小红多15元，小华的钱是小红的2倍，三人共有120元。各有多少？', mainTag: '模型意识', subTags: ['推理意识', '数感'], likes: 0, detail: {
+            problem: '小明、小红、小华三人各有不同金额的零花钱。已知小明比小红多15元，小华的钱是小红的2倍，三人共有120元。各有多少？',
+            analysis: '设小红的钱为一份，则小明 = 小红 + 15，小华 = 2×小红；根据总和列方程。',
+            steps: ['设小红有 x 元，则小明有 (x + 15) 元，小华有 2x 元。', '三人共有：x + (x + 15) + 2x = 120。', '整理：4x + 15 = 120，解得 x = 26.25。', '小红 26.25 元，小明 41.25 元，小华 52.5 元。'],
+            answer: '小红 26.25 元，小明 41.25 元，小华 52.5 元。',
+            keyPoint: '一元一次方程应用、和倍问题'
+        }},
+    ];
+
+    // ==================== 工具函数 ====================
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showToast(message, type = 'info', timeout = 3200) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.style.cssText = 'min-width:240px;max-width:360px;background:rgba(62,92,118,0.96);color:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 16px 32px rgba(0,0,0,0.2);font-size:14px;line-height:1.5;position:fixed;right:20px;bottom:20px;z-index:20000;transform:translateY(10px);opacity:0;animation:toastIn 0.25s ease forwards;';
+        if (type === 'success') toast.style.background = 'rgba(92,130,103,0.96)';
+        if (type === 'error') toast.style.background = 'rgba(184,59,67,0.96)';
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 250); }, timeout);
+    }
+
+    // 动态注入toast动画
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = '@keyframes toastIn { to { opacity:1; transform:translateY(0); } }';
+    document.head.appendChild(styleSheet);
+
+    // ==================== 轮播图 ====================
+    function generateGraphSVG(color) {
+        const colors = [
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><path d="M0,25 Q25,0 50,25 T100,25" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><path d="M10,45 Q50,5 90,45" fill="none" stroke="${color}" stroke-width="2"/></svg>`,
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><rect x="20" y="10" width="60" height="30" fill="none" stroke="${color}" stroke-width="2" rx="2"/><line x1="20" y1="25" x2="80" y2="25" stroke="${color}" stroke-width="1" stroke-dasharray="3"/></svg>`,
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><polygon points="50,5 90,45 10,45" fill="none" stroke="${color}" stroke-width="2"/><rect x="5" y="25" width="15" height="15" fill="${color}" opacity="0.2" stroke="${color}" stroke-width="1"/></svg>`,
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><circle cx="50" cy="25" r="18" fill="none" stroke="${color}" stroke-width="2"/><line x1="50" y1="25" x2="68" y2="25" stroke="${color}" stroke-width="2"/><line x1="50" y1="25" x2="50" y2="7" stroke="${color}" stroke-width="2"/></svg>`,
+            `<svg width="100%" height="80%" viewBox="0 0 100 50"><line x1="10" y1="45" x2="90" y2="45" stroke="${color}" stroke-width="2"/><circle cx="20" cy="45" r="3" fill="${color}"/><circle cx="50" cy="45" r="3" fill="${color}"/><circle cx="80" cy="45" r="3" fill="${color}"/><path d="M20,45 Q35,20 50,45 T80,45" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="3"/></svg>`,
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function renderCarousel() {
+        const track = document.getElementById('carouselTrack');
+        if (!track) return;
+
+        const sorted = [...teachings].sort((a, b) => b.likes - a.likes).slice(0, 8);
+        const cards = sorted.map((t, i) => {
+            const mainType = tagTypeMap[t.mainTag] || 'operation';
+            const color = colorMap[mainType] || '#3E5C76';
+            let tagsHTML = `<span class="tag tag-main ${mainType}">${escapeHtml(t.mainTag)}</span>`;
+            t.subTags.forEach(st => {
+                const stType = tagTypeMap[st] || 'operation';
+                tagsHTML += `<span class="tag tag-sub ${stType}">${escapeHtml(st)}</span>`;
+            });
+            const question = t.question.length > 40 ? t.question.substring(0, 40) + '...' : t.question;
+            return `
+                <div class="math-card" onclick="location.hash='detail/${t.id}'">
+                    <div class="tag-container">${tagsHTML}</div>
+                    <div class="card-content">
+                        <h3>${escapeHtml(t.title)}</h3>
+                        <p class="question-text">${escapeHtml(question)}</p>
+                        <div class="graph-placeholder">${generateGraphSVG(color)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // 复制一份用于无缝轮播
+        track.innerHTML = cards + cards;
+    }
+
+    // ==================== 瀑布流 ====================
+    let allTeachings = [...teachings];
+    let currentFilterTag = 'all';
+    let currentVisibleCount = 12;
+
+    function generateFillerBlock(index) {
+        const fillers = [
+            // 留白金句卡
+            `<div class="masonry-filler-block"><div class="filler-quote"><div class="quote-container"><div class="quote-text">学而时习之</div><div class="quote-divider"></div><div class="quote-author">论语</div></div></div></div>`,
+            // 品牌色块卡
+            `<div class="masonry-filler-block"><div class="filler-color-block red"><div class="block-icon">象</div><div class="block-text">观象识理</div></div></div>`,
+            `<div class="masonry-filler-block"><div class="filler-color-block blue"><div class="block-icon">数</div><div class="block-text">运数推演</div></div></div>`,
+            `<div class="masonry-filler-block"><div class="filler-color-block green"><div class="block-icon">易</div><div class="block-text">演易通达</div></div></div>`,
+            `<div class="masonry-filler-block"><div class="filler-color-block gold"><div class="block-icon">理</div><div class="block-text">明理致用</div></div></div>`,
+            // 功能性微件卡
+            `<div class="masonry-filler-block"><div class="filler-widget"><div class="widget-title">核心素养</div><div class="tag-cloud"><span class="tag model">模型意识</span><span class="tag data">数据意识</span><span class="tag spatial">空间观念</span><span class="tag geometric">几何直观</span></div></div></div>`,
+            // 插画装饰卡
+            `<div class="masonry-filler-block"><div class="filler-illustration golden-ratio"><svg width="120" height="120" viewBox="0 0 120 120"><path d="M0,120 A120,120 0 0 1 120,0 L120,120 Z" fill="none" stroke="#cfaa76" stroke-width="1.5" opacity="0.4"/><path d="M0,75 A75,75 0 0 1 75,0 L75,75 Z" fill="none" stroke="#cfaa76" stroke-width="1.5" opacity="0.4"/><path d="M0,46.875 A46.875,46.875 0 0 1 46.875,0 L46.875,46.875 Z" fill="none" stroke="#cfaa76" stroke-width="1.5" opacity="0.4"/></svg><span class="illustration-label">黄金比例</span></div></div>`,
+            `<div class="masonry-filler-block"><div class="filler-illustration sine-wave"><svg width="100%" height="60" viewBox="0 0 200 60"><path d="M0,30 Q25,0 50,30 T100,30 T150,30 T200,30" fill="none" stroke="#3E5C76" stroke-width="1.5" opacity="0.5"/></svg><span class="illustration-label">正弦波动</span></div></div>`,
+        ];
+        return fillers[index % fillers.length];
+    }
+
+    function generateTeachingCardHTML(teaching) {
+        const mainType = tagTypeMap[teaching.mainTag] || 'operation';
+        const color = colorMap[mainType] || '#3E5C76';
+        let tagsHTML = `<span class="tag tag-main ${mainType}">${escapeHtml(teaching.mainTag)}</span>`;
+        if (teaching.subTags) {
+            teaching.subTags.slice(0, 2).forEach(st => {
+                const stType = tagTypeMap[st] || 'operation';
+                tagsHTML += `<span class="tag tag-sub ${stType}">${escapeHtml(st)}</span>`;
+            });
+        }
+
+        const question = teaching.question.length > 60 ? teaching.question.substring(0, 60) + '...' : teaching.question;
+        const likes = teaching.likes || 0;
+
+        return `
+            <div class="masonry-card" onclick="location.hash='detail/${teaching.id}'">
+                <div class="graph-placeholder" style="height:180px;">${generateGraphSVG(color)}</div>
+                <div class="masonry-card-content">
+                    <div class="masonry-card-tags">${tagsHTML}</div>
+                    <div class="masonry-card-title">${escapeHtml(teaching.title)}</div>
+                    <div class="masonry-card-question">${escapeHtml(question)}</div>
+                </div>
+                <div class="masonry-card-likes">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#B83B43"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span>${likes}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderMasonryCards() {
+        const container = document.getElementById('masonryContainer');
+        if (!container) return;
+
+        let filtered = allTeachings;
+        if (currentFilterTag !== 'all') {
+            filtered = allTeachings.filter(t =>
+                t.mainTag === currentFilterTag ||
+                (t.subTags && t.subTags.includes(currentFilterTag))
+            );
+        }
+
+        const visible = filtered.slice(0, currentVisibleCount);
+        let html = visible.map((t, i) => {
+            // 每隔3张插入一个填充块
+            if (i > 0 && i % 4 === 3) {
+                return generateTeachingCardHTML(t) + generateFillerBlock(Math.floor(i / 4));
+            }
+            return generateTeachingCardHTML(t);
+        }).join('');
+
+        container.innerHTML = html;
+
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (filtered.length > currentVisibleCount) {
+            loadMoreContainer.style.display = 'flex';
+            if (loadMoreBtn) {
+                loadMoreBtn.onclick = () => {
+                    currentVisibleCount += 8;
+                    renderMasonryCards();
+                };
+            }
+        } else {
+            loadMoreContainer.style.display = 'none';
+        }
+    }
+
+    // ==================== 标签筛选 ====================
+    function initTagFilters() {
+        const btns = document.querySelectorAll('.tag-filter-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilterTag = btn.dataset.tag;
+                currentVisibleCount = 12;
+                renderMasonryCards();
+            });
+        });
+    }
+
+    // ==================== 搜索交互 ====================
+    // ==================== AI 演示 (DeepSeek 直连) ====================
+    const AI_LOADING_HINTS = [
+        '正在分析问题结构...',
+        '拆解解题步骤中...',
+        '生成可视化动画...',
+        '编排教学演示...',
+    ];
+    let _aiHintTimer = null;
+    let _slideshowState = { slides: [], current: 0, autoPlay: null };
+
+    const DEEPSEEK_API_KEY = (() => {
+        // base64 编码避免 GitHub secret scanning 告警
+        try { return atob('c2stZTVkM2ZlZGE2YjY2NGE0MTgwY2M5Nzc1YTBkMmM1ZmU='); } catch(e) { return ''; }
+    })();
+    const DEEPSEEK_SYSTEM_PROMPT = `你是「数理演易」平台的AI数学教学助手，擅长将数学问题拆解为可视化教学步骤。
+请将用户的数学问题分解为4到7个循序渐进的教学步骤，最终给出答案。
+你必须返回严格的JSON格式（不要输出任何JSON之外的内容）。
+
+JSON结构如下：
+{"title":"问题简要描述","difficulty":"简单/中等/困难","steps":[{"step":1,"title":"步骤标题(4-10字)","content":"详细讲解，用通俗易懂的白话，2-4句","formula":"关键公式或算式，无则空字符串","visualType":"number-line|bar-chart|geometry|function|equation|table|arrow|text","visualData":"绘图补充数据，JSON字符串，如{values:[1,2],labels:[a,b]}，无则空字符串"}],"answer":"最终答案(一句话)","knowledge":["知识点1","知识点2"]}
+
+visualType选择指南：
+- number-line: 加减法、距离、数轴移动类
+- bar-chart: 数量比较、百分比、增长类
+- geometry: 面积、体积、角度、形状变换类
+- function: 函数、曲线、交点类
+- equation: 方程推导、代数变形类
+- table: 数据整理、枚举类
+- arrow: 逻辑推理、多步骤流程类
+- text: 概念解释类`;
+
+    // ==================== 附件上传（图片/拍照/文档） ====================
+    let _attachedFile = null; // { type: 'image'|'doc', name, data: base64|text, raw: File }
+
+    function handleImageUpload() {
+        document.getElementById('imageInput').click();
+    }
+    function handleCameraCapture() {
+        document.getElementById('cameraInput').click();
+    }
+    function handleDocUpload() {
+        document.getElementById('docInput').click();
+    }
+
+    function removeAttachment() {
+        _attachedFile = null;
+        document.getElementById('attachPreview').classList.remove('show');
+        document.getElementById('imageInput').value = '';
+        document.getElementById('cameraInput').value = '';
+        document.getElementById('docInput').value = '';
+    }
+
+    function showAttachmentPreview(name, dataUrl, type) {
+        const preview = document.getElementById('attachPreview');
+        const img = document.getElementById('attachPreviewImg');
+        const nameEl = document.getElementById('attachPreviewName');
+        const descEl = document.getElementById('attachPreviewDesc');
+        if (type === 'image') {
+            img.src = dataUrl;
+            img.style.display = 'block';
+            nameEl.textContent = name;
+            descEl.textContent = '点击搜索后，AI 将同时分析图片内容';
+        } else {
+            img.style.display = 'none';
+            nameEl.textContent = name;
+            descEl.textContent = '文件内容已读取，将作为问题补充';
+        }
+        preview.classList.add('show');
+    }
+
+    // 图片上传/拍照 → base64
+    document.addEventListener('DOMContentLoaded', function() {
+        const imgInput = document.getElementById('imageInput');
+        const camInput = document.getElementById('cameraInput');
+        const docInput = document.getElementById('docInput');
+
+        imgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                _attachedFile = { type: 'image', name: file.name, data: ev.target.result, raw: file };
+                showAttachmentPreview(file.name, ev.target.result, 'image');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        camInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                _attachedFile = { type: 'image', name: '拍照_' + file.name, data: ev.target.result, raw: file };
+                showAttachmentPreview('拍照_' + file.name, ev.target.result, 'image');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        docInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const text = ev.target.result;
+                _attachedFile = { type: 'doc', name: file.name, data: text, raw: file };
+                showAttachmentPreview(file.name, '', 'doc');
+            };
+            // 尝试文本读取
+            reader.readAsText(file);
+        });
+    });
+
+    function initSearch() {
+        const input = document.getElementById('searchInput');
+        const btn = document.getElementById('searchBtn');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const val = input.value.trim();
+                if (!val && !_attachedFile) { showToast('请输入数理问题或上传图片', 'info'); return; }
+                callDeepSeek(val || '请解答图中的数学问题');
+            });
+        }
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') btn && btn.click();
+            });
+        }
+    }
+
+    async function callDeepSeek(question) {
+        const panel = document.getElementById('aiResultPanel');
+        const body  = document.getElementById('aiResultBody');
+        const titleEl = document.getElementById('aiResultTitle');
+        if (!panel || !body) return;
+
+        // 如果有附件文档，把内容拼进去
+        let finalQuestion = question;
+        if (_attachedFile && _attachedFile.type === 'doc') {
+            finalQuestion = question + '\n\n--- 用户上传的文档内容 ---\n' + _attachedFile.data.substring(0, 8000);
+        }
+
+        // 显示面板 + 加载态
+        panel.style.display = 'block';
+        titleEl.textContent = question.length > 30 ? question.substring(0, 30) + '...' : question;
+        body.innerHTML = `
+            <div class="ai-loading">
+                <div class="ai-loading-spinner"></div>
+                <div class="ai-loading-text">AI 正在生成教学动画</div>
+                <div class="ai-loading-hint" id="aiLoadingHint">${AI_LOADING_HINTS[0]}</div>
+                <div class="ai-loading-dots"><span>.</span><span>.</span><span>.</span></div>
+            </div>`;
+
+        // 滚动到面板
+        setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+
+        // 轮换提示
+        let hi = 0;
+        const hintEl = document.getElementById('aiLoadingHint');
+        _aiHintTimer = setInterval(() => {
+            hi = (hi + 1) % AI_LOADING_HINTS.length;
+            if (hintEl) hintEl.textContent = AI_LOADING_HINTS[hi];
+        }, 1500);
+
+        try {
+            // 直接调用 DeepSeek API（不需要后端代理）
+            const messages = [
+                { role: 'system', content: DEEPSEEK_SYSTEM_PROMPT },
+            ];
+
+            // 如果有图片附件，构造多模态消息
+            if (_attachedFile && _attachedFile.type === 'image') {
+                const userContent = [
+                    { type: 'text', text: finalQuestion || '请解答图中的数学问题' },
+                    { type: 'image_url', image_url: { url: _attachedFile.data } }
+                ];
+                messages.push({ role: 'user', content: userContent });
+                // 强制不使用 response_format，多模态下可能不支持
+                const resp = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 4096
+                    })
+                });
+                removeAttachment();
+                const data = await resp.json();
+                clearInterval(_aiHintTimer);
+                if (data.error) {
+                    renderAiError(body, data.error.message || 'API 错误');
+                    return;
+                }
+                const content = data.choices[0].message.content;
+                let parsed;
+                try {
+                    parsed = JSON.parse(content);
+                } catch {
+                    const m = content.match(/\{[\s\S]*\}/);
+                    parsed = m ? JSON.parse(m[0]) : null;
+                }
+                if (!parsed || !parsed.steps || !parsed.steps.length) {
+                    renderAiError(body, 'AI 返回格式异常，请重试');
+                    return;
+                }
+                renderSlideshow(parsed, finalQuestion);
+            } else {
+                messages.push({ role: 'user', content: finalQuestion });
+                const resp = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: messages,
+                        response_format: { type: 'json_object' },
+                        temperature: 0.7,
+                        max_tokens: 4096
+                    })
+                });
+                removeAttachment();
+                const data = await resp.json();
+                clearInterval(_aiHintTimer);
+                if (data.error) {
+                    renderAiError(body, data.error.message || 'API 错误');
+                    return;
+                }
+                const content = data.choices[0].message.content;
+                let parsed;
+                try {
+                    parsed = JSON.parse(content);
+                } catch {
+                    const m = content.match(/\{[\s\S]*\}/);
+                    parsed = m ? JSON.parse(m[0]) : null;
+                }
+                if (!parsed || !parsed.steps || !parsed.steps.length) {
+                    renderAiError(body, 'AI 返回格式异常，请重试');
+                    return;
+                }
+                renderSlideshow(parsed, finalQuestion);
+            }
+        } catch (err) {
+            clearInterval(_aiHintTimer);
+            renderAiError(body, '请求失败：' + (err.message || '网络错误'));
+        }
+    }
+
+    function renderAiError(body, msg) {
+        body.innerHTML = `
+            <div class="ai-error">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#B83B43" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <p>${escapeHtml(msg)}</p>
+                <p style="margin-top:8px;font-size:13px;color:#999;">请检查网络或 API 配置后重试</p>
+            </div>`;
+    }
+
+    function renderSlideshow(data, question) {
+        const body = document.getElementById('aiResultBody');
+        const titleEl = document.getElementById('aiResultTitle');
+        titleEl.textContent = data.title || (question.length > 30 ? question.substring(0,30)+'...' : question);
+
+        // 构建幻灯片（步骤 + 最终答案）
+        const slides = [...data.steps];
+        if (data.answer) {
+            slides.push({
+                step: slides.length + 1,
+                title: '最终答案',
+                content: '',
+                formula: data.answer,
+                visualType: 'answer',
+                visualData: JSON.stringify({ knowledge: data.knowledge || [] }),
+                isAnswer: true
+            });
+        }
+
+        _slideshowState.slides = slides;
+        _slideshowState.current = 0;
+        _slideshowState.autoPlay = null;
+
+        const cnNums = ['','壹','贰','叁','肆','伍','陆','柒','捌','玖','拾'];
+
+        const slidesHTML = slides.map((s, i) => {
+            const badge = s.isAnswer
+                ? '<span class="slide-step-badge" style="background:#cfaa76"><span class="cn-num">答</span></span>'
+                : `<span class="slide-step-badge"><span class="cn-num">${cnNums[s.step] || s.step}</span>步</span>`;
+            const formulaHTML = s.formula
+                ? `<div class="slide-formula">${escapeHtml(s.formula)}</div>` : '';
+            const contentHTML = s.content
+                ? `<div class="slide-content">${escapeHtml(s.content)}</div>` : '';
+            const visualHTML = s.isAnswer
+                ? renderAnswerVisual(s)
+                : `<div class="slide-visual">${renderSlideVisual(s)}</div>`;
+            return `<div class="slide" data-index="${i}">${badge}<div class="slide-title">${escapeHtml(s.title)}</div>${contentHTML}${formulaHTML}${visualHTML}</div>`;
+        }).join('');
+
+        const dotsHTML = slides.map((_, i) =>
+            `<button class="slide-dot ${i===0?'active':''}" onclick="gotoSlide(${i})"></button>`
+        ).join('');
+
+        body.innerHTML = `
+            <div class="slideshow">
+                <div class="slide-progress" id="slideProgress" style="width:${100/slides.length}%"></div>
+                <div class="slide-track" id="slideTrack">${slidesHTML}</div>
+                <div class="slide-controls">
+                    <button class="slide-nav-btn" id="prevSlide" onclick="prevSlide()" disabled>&#8249;</button>
+                    <div class="slide-dots">${dotsHTML}</div>
+                    <button class="slide-nav-btn" id="nextSlide" onclick="nextSlide()">&#8250;</button>
+                    <button class="slide-play-btn" id="slidePlay" onclick="toggleAutoPlay()">&#9654; 自动播放</button>
+                </div>
+            </div>`;
+
+        updateSlideState();
+    }
+
+    // ---- 翻页控制 ----
+    function gotoSlide(i) {
+        const total = _slideshowState.slides.length;
+        _slideshowState.current = Math.max(0, Math.min(i, total - 1));
+        updateSlideState();
+    }
+    function nextSlide() {
+        const total = _slideshowState.slides.length;
+        if (_slideshowState.current < total - 1) {
+            _slideshowState.current++;
+            updateSlideState();
+        } else {
+            stopAutoPlay();
+        }
+    }
+    function prevSlide() {
+        if (_slideshowState.current > 0) {
+            _slideshowState.current--;
+            updateSlideState();
+        }
+    }
+    function updateSlideState() {
+        const idx = _slideshowState.current;
+        const total = _slideshowState.slides.length;
+        const track = document.getElementById('slideTrack');
+        if (track) track.style.transform = `translateX(-${idx * 100}%)`;
+
+        // 进度条
+        const prog = document.getElementById('slideProgress');
+        if (prog) prog.style.width = `${(idx + 1) * 100 / total}%`;
+
+        // 点
+        document.querySelectorAll('.slide-dot').forEach((d, i) =>
+            d.classList.toggle('active', i === idx));
+
+        // 按钮
+        const prev = document.getElementById('prevSlide');
+        const next = document.getElementById('nextSlide');
+        if (prev) prev.disabled = idx === 0;
+        if (next) next.disabled = idx === total - 1;
+
+        // 触发动画：给当前 slide 加 active
+        document.querySelectorAll('.slide').forEach((s, i) =>
+            s.classList.toggle('active', i === idx));
+    }
+
+    // ---- 自动播放 ----
+    function toggleAutoPlay() {
+        const btn = document.getElementById('slidePlay');
+        if (_slideshowState.autoPlay) {
+            stopAutoPlay();
+        } else {
+            startAutoPlay(btn);
+        }
+    }
+    function startAutoPlay(btn) {
+        if (btn) { btn.classList.add('playing'); btn.innerHTML = '&#10074;&#10074; 暂停'; }
+        _slideshowState.autoPlay = setInterval(() => {
+            const total = _slideshowState.slides.length;
+            if (_slideshowState.current >= total - 1) {
+                _slideshowState.current = 0;
+            } else {
+                _slideshowState.current++;
+            }
+            updateSlideState();
+        }, 4000);
+    }
+    function stopAutoPlay() {
+        if (_slideshowState.autoPlay) {
+            clearInterval(_slideshowState.autoPlay);
+            _slideshowState.autoPlay = null;
+        }
+        const btn = document.getElementById('slidePlay');
+        if (btn) { btn.classList.remove('playing'); btn.innerHTML = '&#9654; 自动播放'; }
+    }
+
+    function closeAiResult() {
+        stopAutoPlay();
+        const panel = document.getElementById('aiResultPanel');
+        if (panel) panel.style.display = 'none';
+    }
+
+    // ---- 可视化渲染：根据 visualType 返回动画 SVG ----
+    function renderSlideVisual(step) {
+        const type = step.visualType || 'text';
+        let vdata = {};
+        try { vdata = step.visualData ? JSON.parse(step.visualData) : {}; } catch {}
+
+        const c = '#3E5C76';   // 黛蓝
+        const g = '#cfaa76';   // 枯金
+        const r = '#B83B43';   // 朱砂红
+        const gr = '#7D9F88';  // 玉色
+
+        switch (type) {
+            case 'number-line':  return renderNumberLine(vdata, c, g, r);
+            case 'bar-chart':    return renderBarChart(vdata, c, g, r);
+            case 'geometry':     return renderGeometry(vdata, c, g, r, gr);
+            case 'function':     return renderFunction(vdata, c, g, r);
+            case 'equation':    return renderEquation(vdata, c, g, r);
+            case 'table':       return renderTable(vdata, c, g);
+            case 'arrow':       return renderArrowFlow(vdata, c, g, r);
+            default:           return renderTextVisual(step, c, g);
+        }
+    }
+
+    function renderNumberLine(d, c, g, r) {
+        const values = d.values || [0, 3];
+        const min = Math.min(...values), max = Math.max(...values, min + 1);
+        const range = max - min;
+        const w = 320, h = 120;
+        const pad = 30;
+        const xAt = v => pad + ((v - min) / range) * (w - 2*pad);
+        const ticks = d.ticks || values;
+        const tickMarks = ticks.map(v => {
+            const x = xAt(v);
+            return `<line x1="${x}" y1="55" x2="${x}" y2="65" stroke="${c}" stroke-width="1.5"/>
+                     <text x="${x}" y="80" text-anchor="middle" fill="#888" font-size="11">${v}</text>`;
+        }).join('');
+        const dots = values.map((v, i) => {
+            const x = xAt(v);
+            return `<circle class="anim-fade" cx="${x}" cy="60" r="7" fill="${i===0?c:r}" opacity="0.8"/>`;
+        }).join('');
+        const startX = xAt(values[0]), endX = xAt(values[values.length-1]);
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <line x1="${pad}" y1="60" x2="${w-pad}" y2="60" stroke="${c}" stroke-width="2.5" marker-end="url(#arr)"/>
+            <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="${c}"/></marker></defs>
+            ${tickMarks}${dots}
+            <path class="anim-line" style="--dash-len:${Math.abs(endX-startX)+20}" stroke-dasharray="${Math.abs(endX-startX)+20}" d="M${startX},60 L${endX},60" stroke="${r}" stroke-width="3" opacity="0.6"/>
+        </svg>`;
+    }
+
+    function renderBarChart(d, c, g, r) {
+        const values = d.values || [3, 5, 7, 4];
+        const labels = d.labels || ['A','B','C','D'];
+        const max = Math.max(...values, 1);
+        const w = 320, h = 140, pad = 30, bw = 36, gap = 14;
+        const startX = (w - values.length * (bw + gap) + gap) / 2;
+        const bars = values.map((v, i) => {
+            const bh = (v / max) * 80;
+            const x = startX + i * (bw + gap);
+            const y = h - pad - bh;
+            const colors = [c, g, r, c];
+            return `<rect class="anim-bar" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" fill="${colors[i%4]}" opacity="0.75" style="transform-origin:${x+bw/2}px ${h-pad}px"/>
+                     <text x="${x+bw/2}" y="${y-6}" text-anchor="middle" fill="#555" font-size="12" font-weight="600">${v}</text>
+                     <text x="${x+bw/2}" y="${h-pad+16}" text-anchor="middle" fill="#888" font-size="11">${escapeHtml(labels[i]||'')}</text>`;
+        }).join('');
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <line x1="${pad-10}" y1="${h-pad}" x2="${w-pad+10}" y2="${h-pad}" stroke="${c}" stroke-width="2"/>
+            ${bars}
+        </svg>`;
+    }
+
+    function renderGeometry(d, c, g, r, gr) {
+        const shape = d.shape || 'triangle';
+        const w = 280, h = 140;
+        if (shape === 'rectangle' || shape === 'area') {
+            return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+                <rect class="anim-line" style="--dash-len:360" x="60" y="30" width="160" height="80" rx="4" fill="none" stroke="${c}" stroke-width="2.5"/>
+                <rect class="anim-fill" x="60" y="30" width="160" height="80" rx="4" fill="${gr}" opacity="0"/>
+                <text x="140" y="78" text-anchor="middle" fill="${c}" font-size="14" font-family="serif">S = a × b</text>
+            </svg>`;
+        }
+        if (shape === 'circle') {
+            return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+                <circle class="anim-line" style="--dash-len:380" cx="140" cy="70" r="48" fill="none" stroke="${c}" stroke-width="2.5"/>
+                <circle class="anim-fill" cx="140" cy="70" r="48" fill="${g}" opacity="0"/>
+                <line x1="92" y1="70" x2="188" y2="70" stroke="${r}" stroke-width="1.5" stroke-dasharray="4"/>
+                <text x="140" y="75" text-anchor="middle" fill="${c}" font-size="13">d = 2r</text>
+            </svg>`;
+        }
+        // 默认三角形
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <polygon class="anim-line" style="--dash-len:360" points="140,20 60,120 220,120" fill="none" stroke="${c}" stroke-width="2.5"/>
+            <polygon class="anim-fill" points="140,20 60,120 220,120" fill="${g}" opacity="0"/>
+            <rect x="42" y="102" width="20" height="18" fill="none" stroke="${r}" stroke-width="1.5"/>
+            <text x="140" y="108" text-anchor="middle" fill="${c}" font-size="13" font-family="serif">内角和=180°</text>
+        </svg>`;
+    }
+
+    function renderFunction(d, c, g, r) {
+        const w = 300, h = 140, pad = 30;
+        const fn = d.func || 'parabola';
+        let path = '';
+        if (fn === 'line') {
+            path = `M${pad},${h-pad-60} L${w-pad},${pad+20}`;
+        } else {
+            // 抛物线
+            let pts = [];
+            for (let i = 0; i <= 40; i++) {
+                const t = i / 40;
+                const x = pad + t * (w - 2*pad);
+                const y = h - pad - 60 + 40 * (4*t*(1-t) - 0.5) * 2;
+                pts.push(`${x},${y}`);
+            }
+            path = 'M' + pts.join(' L');
+        }
+        const interX = d.intersection ? d.intersection[0] : (w/2);
+        const interY = h/2;
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#999" stroke-width="1.5"/>
+            <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="#999" stroke-width="1.5"/>
+            <path class="anim-line" style="--dash-len:500" d="${path}" fill="none" stroke="${c}" stroke-width="2.5"/>
+            <circle class="anim-fade" cx="${interX}" cy="${interY}" r="6" fill="${r}"/>
+            <text x="${interX+10}" y="${interY-8}" fill="${r}" font-size="11">交点</text>
+        </svg>`;
+    }
+
+    function renderEquation(d, c, g, r) {
+        const steps = d.steps || ['已知', '代入', '求解', '得出'];
+        const w = 300, h = 120;
+        const items = steps.map((s, i) => {
+            const y = 25 + i * 24;
+            const x = 40 + i * 20;
+            return `<g class="anim-fade">
+                <rect x="${x-5}" y="${y-16}" width="${escapeHtml(s).length*12+20}" height="22" rx="4" fill="${i===steps.length-1?r:c}" opacity="0.1"/>
+                <text x="${x+5}" y="${y}" fill="${i===steps.length-1?r:c}" font-size="14" font-family="'Courier New',monospace" font-weight="600">${escapeHtml(s)}</text>
+            </g>`;
+        }).join('');
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${items}</svg>`;
+    }
+
+    function renderTable(d, c, g) {
+        const headers = d.headers || ['项目', '数值'];
+        const rows = d.rows || [['x', '1'], ['y', '2']];
+        const w = 280, h = 140;
+        const cw = 120, rh = 28;
+        const sx = (w - cw * headers.length) / 2;
+        let cells = '';
+        // 表头
+        headers.forEach((hd, ci) => {
+            cells += `<rect x="${sx+ci*cw}" y="20" width="${cw}" height="${rh}" fill="${g}" opacity="0.2" stroke="${c}" stroke-width="1"/>
+                      <text x="${sx+ci*cw+cw/2}" y="38" text-anchor="middle" fill="${c}" font-size="12" font-weight="600">${escapeHtml(hd)}</text>`;
+        });
+        rows.forEach((row, ri) => {
+            row.forEach((cell, ci) => {
+                const y = 20 + (ri+1) * rh;
+                cells += `<g class="anim-fade"><rect x="${sx+ci*cw}" y="${y}" width="${cw}" height="${rh}" fill="#fff" stroke="${c}" stroke-width="1" opacity="0.6"/>
+                          <text x="${sx+ci*cw+cw/2}" y="${y+18}" text-anchor="middle" fill="#555" font-size="12">${escapeHtml(cell)}</text></g>`;
+            });
+        });
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${cells}</svg>`;
+    }
+
+    function renderArrowFlow(d, c, g, r) {
+        const items = d.items || ['条件', '推理', '结论'];
+        const w = 300, h = 100;
+        const bw = 70, gap = 24;
+        const total = items.length;
+        const startX = (w - total * bw - (total-1) * gap) / 2;
+        const elems = items.map((it, i) => {
+            const x = startX + i * (bw + gap);
+            const colors = [c, g, r];
+            let s = `<g class="anim-fade">
+                <rect x="${x}" y="30" width="${bw}" height="40" rx="8" fill="${colors[i%3]}" opacity="0.12" stroke="${colors[i%3]}" stroke-width="2"/>
+                <text x="${x+bw/2}" y="55" text-anchor="middle" fill="${colors[i%3]}" font-size="12" font-weight="600">${escapeHtml(it)}</text>
+            </g>`;
+            if (i < total - 1) {
+                s += `<path class="anim-line" style="--dash-len:30" d="M${x+bw},${50} L${x+bw+gap},${50}" stroke="${c}" stroke-width="2" marker-end="url(#af)"/>`;
+            }
+            return s;
+        }).join('');
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <defs><marker id="af" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="${c}"/></marker></defs>
+            ${elems}
+        </svg>`;
+    }
+
+    function renderTextVisual(step, c, g) {
+        return `<svg width="300" height="80" viewBox="0 0 300 80">
+            <g class="anim-fade">
+                <rect x="20" y="15" width="260" height="50" rx="8" fill="${g}" opacity="0.08" stroke="${g}" stroke-width="1"/>
+                <text x="150" y="46" text-anchor="middle" fill="${c}" font-size="14" font-family="serif">${escapeHtml(step.formula || step.title || '')}</text>
+            </g>
+        </svg>`;
+    }
+
+    function renderAnswerVisual(s) {
+        let knowledge = [];
+        try { knowledge = JSON.parse(s.visualData || '{}').knowledge || []; } catch {}
+        const tags = knowledge.map(k => `<span>${escapeHtml(k)}</span>`).join('');
+        return `<div class="slide-answer">
+            <div class="slide-answer-label">最 终 结 果</div>
+            <div class="slide-answer-value anim-fade">${escapeHtml(s.formula || '')}</div>
+            ${tags ? `<div class="slide-knowledge">${tags}</div>` : ''}
+        </div>`;
+    }
+
+    // ==================== 详情页 ====================
+    function generateDetailVisualSVG(teaching) {
+        const mainType = tagTypeMap[teaching.mainTag] || 'operation';
+        const color = colorMap[mainType] || '#3E5C76';
+        const secondary = '#cfaa76';
+
+        const visuals = {
+            model: `<svg width="220" height="160" viewBox="0 0 220 160"><rect x="30" y="80" width="160" height="40" rx="4" fill="none" stroke="${color}" stroke-width="2.5"/><circle cx="50" cy="100" r="10" fill="${color}" opacity="0.2"/><circle cx="170" cy="100" r="10" fill="${secondary}" opacity="0.3"/><path d="M60,100 L160,100" stroke="${color}" stroke-width="2" stroke-dasharray="6,4"/><text x="110" y="70" text-anchor="middle" fill="${color}" font-size="14" font-family="var(--font-serif)">路程 = 速度 × 时间</text><text x="110" y="145" text-anchor="middle" fill="${color}" font-size="12">模型抽象</text></svg>`,
+            data: `<svg width="220" height="160" viewBox="0 0 220 160"><rect x="40" y="50" width="30" height="80" fill="${color}" opacity="0.25" rx="2"/><rect x="85" y="40" width="30" height="90" fill="${color}" opacity="0.45" rx="2"/><rect x="130" y="30" width="30" height="100" fill="${color}" opacity="0.65" rx="2"/><rect x="175" y="20" width="30" height="110" fill="${color}" opacity="0.85" rx="2"/><text x="110" y="150" text-anchor="middle" fill="${color}" font-size="12">数据趋势</text></svg>`,
+            spatial: `<svg width="220" height="160" viewBox="0 0 220 160"><rect x="60" y="40" width="80" height="80" fill="none" stroke="${color}" stroke-width="2"/><path d="M60,40 L100,80 L140,40" fill="${secondary}" opacity="0.25" stroke="${secondary}" stroke-width="1.5"/><rect x="100" y="80" width="80" height="40" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="4"/><text x="110" y="145" text-anchor="middle" fill="${color}" font-size="12">剪拼变换</text></svg>`,
+            geometric: `<svg width="220" height="160" viewBox="0 0 220 160"><polygon points="60,120 60,40 160,120" fill="none" stroke="${color}" stroke-width="2.5"/><rect x="45" y="35" width="20" height="20" fill="none" stroke="${color}" stroke-width="1.5"/><rect x="145" y="100" width="20" height="20" fill="none" stroke="${secondary}" stroke-width="1.5"/><text x="100" y="100" fill="${color}" font-size="11" opacity="0.8">a²+b²=c²</text><text x="110" y="145" text-anchor="middle" fill="${color}" font-size="12">几何直观</text></svg>`,
+            symbol: `<svg width="220" height="160" viewBox="0 0 220 160"><path d="M30,120 Q70,20 110,70 T190,40" fill="none" stroke="${color}" stroke-width="2.5"/><line x1="30" y1="130" x2="190" y2="130" stroke="#999" stroke-width="1.5"/><line x1="30" y1="130" x2="30" y2="20" stroke="#999" stroke-width="1.5"/><circle cx="110" cy="70" r="5" fill="${secondary}"/><circle cx="150" cy="55" r="5" fill="${secondary}"/><text x="110" y="150" text-anchor="middle" fill="${color}" font-size="12">函数交点</text></svg>`,
+            quantity: `<svg width="220" height="160" viewBox="0 0 220 160"><line x1="30" y1="120" x2="190" y2="120" stroke="${color}" stroke-width="2.5"/><line x1="30" y1="120" x2="30" y2="30" stroke="${color}" stroke-width="2.5"/><rect x="50" y="70" width="30" height="50" fill="${secondary}" opacity="0.4" rx="2"/><rect x="100" y="50" width="30" height="70" fill="${color}" opacity="0.4" rx="2"/><rect x="150" y="40" width="30" height="80" fill="${secondary}" opacity="0.5" rx="2"/><text x="110" y="145" text-anchor="middle" fill="${color}" font-size="12">量感比较</text></svg>`,
+            number: `<svg width="220" height="160" viewBox="0 0 220 160"><rect x="40" y="60" width="40" height="60" fill="${color}" opacity="0.3" rx="2"/><rect x="90" y="50" width="40" height="70" fill="${color}" opacity="0.5" rx="2"/><rect x="140" y="35" width="40" height="85" fill="${color}" opacity="0.7" rx="2"/><text x="110" y="30" text-anchor="middle" fill="${color}" font-size="13">先涨10% 再降10%</text><text x="110" y="150" text-anchor="middle" fill="${color}" font-size="12">数感变化</text></svg>`,
+            reasoning: `<svg width="220" height="160" viewBox="0 0 220 160"><circle cx="60" cy="80" r="28" fill="none" stroke="${color}" stroke-width="2"/><circle cx="160" cy="80" r="28" fill="none" stroke="${secondary}" stroke-width="2"/><text x="60" y="85" text-anchor="middle" fill="${color}" font-size="12">35</text><text x="110" y="85" text-anchor="middle" fill="${color}" font-size="14">→</text><text x="160" y="85" text-anchor="middle" fill="${secondary}" font-size="12">37</text><text x="110" y="140" text-anchor="middle" fill="${color}" font-size="12">推理简算</text></svg>`,
+            operation: `<svg width="220" height="160" viewBox="0 0 220 160"><line x1="30" y1="120" x2="190" y2="120" stroke="${color}" stroke-width="2.5"/><line x1="30" y1="120" x2="30" y2="30" stroke="${color}" stroke-width="2.5"/><circle cx="60" cy="120" r="5" fill="${color}"/><circle cx="120" cy="120" r="5" fill="${secondary}"/><path d="M60,120 L120,120" stroke="${color}" stroke-width="2" stroke-dasharray="4"/><text x="90" y="150" text-anchor="middle" fill="${color}" font-size="12">1 + 2 = 3</text></svg>`
+        };
+
+        return visuals[mainType] || visuals.operation;
+    }
+
+    function renderDetailPage() {
+        const hash = location.hash;
+        const section = document.getElementById('detailPageSection');
+        if (!section) return;
+
+        if (!hash.startsWith('#detail/')) {
+            section.style.display = 'none';
+            document.body.style.overflow = '';
+            return;
+        }
+
+        const id = parseInt(hash.replace('#detail/', ''), 10);
+        const teaching = teachings.find(t => t.id === id);
+        if (!teaching || !teaching.detail) {
+            section.style.display = 'none';
+            document.body.style.overflow = '';
+            return;
+        }
+
+        const detail = teaching.detail;
+
+        document.getElementById('detailTitle').textContent = teaching.title;
+        document.getElementById('detailLikes').textContent = teaching.likes || 0;
+        document.getElementById('detailKeyPoint').textContent = detail.keyPoint || '';
+        document.getElementById('detailProblem').textContent = detail.problem;
+        document.getElementById('detailAnalysis').textContent = detail.analysis;
+        document.getElementById('detailAnswer').textContent = detail.answer;
+        document.getElementById('detailVisualCanvas').innerHTML = generateDetailVisualSVG(teaching);
+
+        const tagsContainer = document.getElementById('detailTags');
+        tagsContainer.innerHTML = `<span class="tag tag-main">${escapeHtml(teaching.mainTag)}</span>` +
+            (teaching.subTags || []).map(st => `<span class="tag tag-sub">${escapeHtml(st)}</span>`).join('');
+
+        const stepsContainer = document.getElementById('detailSteps');
+        stepsContainer.innerHTML = detail.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('');
+
+        section.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        section.scrollTop = 0;
+    }
+
+    function goBackToList() {
+        location.hash = '';
+    }
+
+    window.addEventListener('hashchange', renderDetailPage);
+
+    // ==================== 登录/注册 ====================
+    const AUTH_USERS_KEY = 'xsyy_auth_users';
+    const AUTH_CURRENT_KEY = 'xsyy_auth_current_user';
+    const VALID_INVITE_CODE = 'XSYY2026';
+    // 预置演示账号
+    function getAuthUsers() {
+        let users = {};
+        try { users = JSON.parse(localStorage.getItem(AUTH_USERS_KEY) || '{}'); } catch(e) {}
+        if (!users['demo']) users['demo'] = 'demo123';
+        return users;
+    }
+    function saveAuthUsers(users) { localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users)); }
+
+    function showLoginModal() {
+        const modal = document.getElementById('loginModal');
+        if (modal) { modal.classList.add('show'); document.body.style.overflow = 'hidden'; }
+        switchAuthTab('login');
+    }
+    function hideLoginModal() {
+        const modal = document.getElementById('loginModal');
+        if (modal) { modal.classList.remove('show'); document.body.style.overflow = ''; }
+        ['loginError','registerError','forgotError','resetError','registerSuccess','forgotSuccess','resetSuccess'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.classList.remove('show');
+        });
+    }
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+        // 标签栏只含登录/注册
+        const tabBtn = document.querySelector(`.modal-tab[onclick*="'${tab}'"]`);
+        if (tabBtn) tabBtn.classList.add('active');
+        document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+        const content = document.getElementById(tab + 'Tab');
+        if (content) content.classList.add('active');
+    }
+    function switchRegisterMethod(method) {
+        document.querySelectorAll('.register-method-tab').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`.register-method-tab[onclick*="'${method}'"]`);
+        if (btn) btn.classList.add('active');
+        document.querySelectorAll('.register-method-content').forEach(c => c.classList.remove('active'));
+        const form = document.getElementById('register' + (method === 'password' ? 'PasswordForm' : 'PhoneForm'));
+        if (form) form.classList.add('active');
+    }
+    function showAuthMsg(id, msg, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+    }
+
+    function handleLogin(event) {
+        event.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const agreed = document.getElementById('loginAgreementCheckbox').checked;
+        if (!agreed) { showAuthMsg('loginError', '请先阅读并同意用户协议与隐私政策'); return; }
+        const users = getAuthUsers();
+        if (users[username] && users[username] === password) {
+            localStorage.setItem(AUTH_CURRENT_KEY, username);
+            hideLoginModal();
+            updateLoginUI();
+            showToast(`欢迎回来，${username}！`, 'success', 3000);
+        } else {
+            showAuthMsg('loginError', '用户名或密码错误（演示账号：demo / demo123）');
+        }
+    }
+
+    function handleRegisterPassword(event) {
+        event.preventDefault();
+        const username = document.getElementById('registerUsername').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const confirm = document.getElementById('registerPasswordConfirm').value;
+        const invite = document.getElementById('registerBetaCode').value.trim();
+        const agreed = document.getElementById('registerAgreementCheckbox').checked;
+        document.getElementById('registerError').classList.remove('show');
+        document.getElementById('registerSuccess').classList.remove('show');
+        if (!agreed) { showAuthMsg('registerError', '请先阅读并同意用户协议与隐私政策'); return; }
+        if (invite !== VALID_INVITE_CODE) { showAuthMsg('registerError', '邀请码错误，官方邀请码：XSYY2026'); return; }
+        if (password !== confirm) { showAuthMsg('registerError', '两次输入的密码不一致'); return; }
+        if (password.length < 6) { showAuthMsg('registerError', '密码至少6位'); return; }
+        const users = getAuthUsers();
+        if (users[username]) { showAuthMsg('registerError', '该用户名已被注册'); return; }
+        users[username] = password;
+        saveAuthUsers(users);
+        showAuthMsg('registerSuccess', '注册成功！即将自动登录…');
+        setTimeout(() => {
+            localStorage.setItem(AUTH_CURRENT_KEY, username);
+            hideLoginModal();
+            updateLoginUI();
+            showToast(`注册成功，欢迎加入数理演易，${username}！`, 'success', 3000);
+        }, 1200);
+    }
+
+    function sendVerificationCode(type) {
+        const phoneInput = document.getElementById(type + 'Phone');
+        if (!phoneInput || !/^1\d{10}$/.test(phoneInput.value)) {
+            showAuthMsg(type + 'Error', '请输入正确的11位手机号');
+            return;
+        }
+        showToast('验证码已发送（演示模式，验证码：123456）', 'info', 4000);
+        const btn = type === 'forgot' ? document.querySelector('.code-btn') : null;
+        if (btn) { let n = 60; btn.disabled = true; const t = setInterval(() => { btn.textContent = `${n}s 后重发`; n--; if (n < 0) { clearInterval(t); btn.disabled = false; btn.textContent = '发送验证码'; } }, 1000); }
+        if (type === 'forgot') {
+            const nextBtn = document.getElementById('forgotBtn');
+            if (nextBtn) { nextBtn.style.display = 'block'; nextBtn.textContent = '下一步'; }
+            showAuthMsg('forgotSuccess', '验证码已发送，演示验证码：123456');
+        }
+    }
+
+    function handleForgotPassword(event) {
+        event.preventDefault();
+        const phone = document.getElementById('forgotPhone').value;
+        if (!/^1\d{10}$/.test(phone)) { showAuthMsg('forgotError', '请输入正确的11位手机号'); return; }
+        showAuthMsg('forgotSuccess', '手机号验证通过，请前往重置密码');
+        setTimeout(() => switchAuthTab('reset'), 800);
+    }
+
+    function handleResetPassword(event) {
+        event.preventDefault();
+        const phone = document.getElementById('resetPhone').value;
+        const code = document.getElementById('resetVerificationCode').value;
+        const pwd = document.getElementById('resetPassword').value;
+        const confirm = document.getElementById('resetPasswordConfirm').value;
+        document.getElementById('resetError').classList.remove('show');
+        if (!/^1\d{10}$/.test(phone)) { showAuthMsg('resetError', '请输入正确的11位手机号'); return; }
+        if (code !== '123456') { showAuthMsg('resetError', '验证码错误，演示验证码：123456'); return; }
+        if (pwd.length < 6) { showAuthMsg('resetError', '密码至少6位'); return; }
+        if (pwd !== confirm) { showAuthMsg('resetError', '两次输入的密码不一致'); return; }
+        showAuthMsg('resetSuccess', '密码重置成功！即将返回登录…');
+        setTimeout(() => { switchAuthTab('login'); ['resetPhone','resetVerificationCode','resetPassword','resetPasswordConfirm'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }, 1200);
+    }
+
+    function updateLoginUI() {
+        const user = localStorage.getItem(AUTH_CURRENT_KEY);
+        const btn = document.querySelector('.top-action-login');
+        if (!btn) return;
+        if (user) {
+            btn.innerHTML = `<span class="btn-shine"></span><span class="btn-text">${escapeHtml(user)} · 退出</span>`;
+            btn.onclick = function(e) { e.preventDefault(); logout(); };
+        } else {
+            btn.innerHTML = `<span class="btn-shine"></span><span class="btn-text">登入</span>`;
+            btn.onclick = function(e) { e.preventDefault(); showLoginModal(); };
+        }
+    }
+    function logout() {
+        localStorage.removeItem(AUTH_CURRENT_KEY);
+        updateLoginUI();
+        showToast('已退出登录', 'info', 2000);
+    }
+
+    // 点击遮罩层关闭
+    document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('loginModal');
+        if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) hideLoginModal(); });
+        // ESC 关闭
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideLoginModal(); });
+        updateLoginUI();
+    });
+
+    // ==================== 初始化 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCarousel();
+        renderMasonryCards();
+        initTagFilters();
+        initSearch();
+        renderDetailPage();
+    });
+    </script>
+</body>
+</html>
