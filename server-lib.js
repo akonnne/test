@@ -50,6 +50,77 @@ const CORS = {
 // 本文件不内置任何真实密钥；缺失时生成接口返回 502 并提示配置。
 const DEEPSEEK_KEY = process.env.DEEPSEEK_KEY || '';
 
+// ------------------------------------------------------------------
+// 接口防滥用（锁住 DeepSeek 密钥，避免被公开接口白嫖额度）
+//   1) 同源校验：仅允许来自本站域名（及本地开发）的请求调用 /api/chat、/api/tasks。
+//   2) 按客户端 IP 滑动窗口限流：超出配额返回 429，挡住脚本批量刷接口。
+// 说明：Cloudflare Pages Functions 为短暂运行时，模块级内存不跨请求持久，
+//       故限流为「单隔离实例内」防护；要全局严格限流请在 Cloudflare 控制台开启
+//       WAF / Rate Limiting 规则（付费计划）。密钥本身始终只在服务端，浏览器拿不到。
+// ------------------------------------------------------------------
+const ALLOWED_ORIGINS = (function () {
+  const list = ['https://shudao-wanxiang.pages.dev'];
+  if (process.env.SITE_ORIGIN) list.push(process.env.SITE_ORIGIN);
+  // 本地开发环境一并放行
+  list.push('http://localhost:8099', 'http://localhost:3000',
+            'http://127.0.0.1:8099', 'http://127.0.0.1:3000');
+  return list;
+})();
+
+const RATE_WINDOW_MS = 60 * 1000; // 60 秒窗口
+const RATE_MAX = 20;              // 每 IP 每窗口最多 20 次（chat+tasks 合计）
+const rateMap = new Map();        // ip -> { start, count }
+
+function _clientIpWeb(request) {
+  const cf = request.headers && request.headers.get && request.headers.get('CF-Connecting-IP');
+  if (cf) return cf;
+  try { return new URL(request.url).hostname || 'unknown'; } catch (e) { return 'unknown'; }
+}
+function _clientIpNode(req) {
+  return (req && req.socket && req.socket.remoteAddress) ||
+         (req && req.headers && (req.headers['x-forwarded-for'])) || 'unknown';
+}
+function _checkOrigin(rawOrigin) {
+  if (!rawOrigin) return true; // 无 Origin（服务端工具/健康检查）放行，由限流兜底
+  return ALLOWED_ORIGINS.indexOf(rawOrigin) !== -1;
+}
+function _checkRate(ip) {
+  const now = Date.now();
+  const rec = rateMap.get(ip);
+  if (!rec || now - rec.start > RATE_WINDOW_MS) {
+    rateMap.set(ip, { start: now, count: 1 });
+    return true;
+  }
+  rec.count += 1;
+  if (rec.count > RATE_MAX) {
+    const retryAfter = Math.ceil((RATE_WINDOW_MS - (now - rec.start)) / 1000);
+    return { blocked: true, retryAfter: retryAfter };
+  }
+  return true;
+}
+// Web 标准（Cloudflare/Vercel Edge）：通过返回 null，否则返回 Response
+function guardWeb(request) {
+  const origin = request.headers && request.headers.get && request.headers.get('Origin');
+  if (!_checkOrigin(origin)) {
+    return new Response(JSON.stringify({ error: 'forbidden: cross-origin request blocked' }),
+      { status: 403, headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, CORS) });
+  }
+  const r = _checkRate(_clientIpWeb(request));
+  if (r && r.blocked) {
+    return new Response(JSON.stringify({ error: 'too many requests, please retry later' }),
+      { status: 429, headers: Object.assign({ 'Retry-After': String(r.retryAfter), 'Content-Type': 'application/json; charset=utf-8' }, CORS) });
+  }
+  return null;
+}
+// Node 原生（server.js / Vercel 函数）：通过返回 true，否则已写响应返回 false
+function guardNode(req, res) {
+  const origin = req.headers && (req.headers.origin || req.headers.Origin);
+  if (!_checkOrigin(origin)) { sendJSON(res, 403, { error: 'forbidden: cross-origin request blocked' }); return false; }
+  const r = _checkRate(_clientIpNode(req));
+  if (r && r.blocked) { sendJSON(res, 429, { error: 'too many requests, please retry later', retryAfter: r.retryAfter }); return false; }
+  return true;
+}
+
 // 任务落盘目录：有 fs 时本地/Serverless 用 GEN_DIR；无 fs（Cloudflare）降级到 /tmp（落盘会静默失败，内存仍可用）。
 const GEN_DIR = (function () {
   if (process.env.GEN_DIR) return process.env.GEN_DIR;
@@ -68,7 +139,37 @@ try {
 /* ------------------------------------------------------------------ *
  * 生成动画 spec 的系统提示
  * ------------------------------------------------------------------ */
-const GEN_SYSTEM_PROMPT = `你是"数道万象"数学动画生成引擎。根据用户问题，生成一个**交互式教学动画（JSON spec）**。前端会把它渲染成「可分步演示、可拖动参数、带讲解文字」的 Canvas 动画，所以必须严格遵循下面的 schema，不要输出任何 spec 以外的说明文字（也不要用 \`\`\`json 包裹）。
+const GEN_SYSTEM_PROMPT = `你是"数道万象"智能数学教学引擎。用户会向你提问，可能附带图片或文件（数学题照片、公式截图、文字题目等）。
+
+【第一步：判断题型】
+先判断用户输入（含附件）是否为**数学问题**——包括但不限于：数与代数、几何、函数、方程与不等式、数列、向量、三角函数、概率统计，以及"画图 / 演示 / 动画 / 直观展示"类的数学相关请求。
+- 是数学问题 → 进入【数学模式】
+- 不是数学问题（如闲聊、生活常识、文学历史、编程、与数学无关的话题）→ 进入【通用模式】
+
+【数学模式】必须只返回一个 JSON 对象（不要输出任何额外文字，不要用 \`\`\` 包裹）：
+{
+  "isMath": true,
+  "title": "不超过 18 字的动画标题",
+  "subtitle": "一句话副标题，如：几何直观 · 推理意识",
+  "animation": {
+    <交互式教学动画定义，严格遵循下方【动画 schema】>
+  },
+  "solution": {
+    "thinking": "解题思路：用 1-3 句口语化说明解法思路与依据（会被语音朗读，请像讲课一样自然）",
+    "steps": ["步骤1：写出关键算式并代入数值", "步骤2：……", "步骤3：……"],
+    "answer": "最终答案（含单位，例如 4/3、√5、y=2x+1、c=5）"
+  }
+}
+要求：animation 必填且至少含 objects(≥1) 与 steps(≥3)；solution 必填（thinking / steps / answer 三项尽量齐全）。
+
+【通用模式】必须只返回一个 JSON 对象（不要输出任何额外文字）：
+{
+  "isMath": false,
+  "topic": "一句话主题分类",
+  "answer": "用简洁、准确、有条理的中文回答用户的问题（2-6 句）。若问题涉及数学学习方法、概念解释等也可在此作答。"
+}
+
+【下面是 animation 字段（交互式教学动画定义）的写法】
 
 【坐标系统】
 - 世界坐标：x 轴向右、y 轴向上。
@@ -119,24 +220,33 @@ const GEN_SYSTEM_PROMPT = `你是"数道万象"数学动画生成引擎。根据
 支持 + - * / ^ 和函数 sin cos tan sqrt abs min max log exp，变量来自 slider/step。
 例：(x-a)^2 、 a*sin(x) 、 sqrt(a^2+b^2) 。
 
-【输出格式（只返回这一个 JSON 对象）】
+【完整输出格式（数学模式只返回这一个 JSON 对象）】
 {
+  "isMath": true,
   "title": "动画标题",
   "subtitle": "一句话副标题（如：运算能力 · 数感）",
-  "xRange": [-8, 8],
-  "yRange": [-5, 5],
-  "controls": [ { "type":"slider", "id":"a", "label":"a", "min":-5, "max":5, "step":0.1, "value":2 } ],
-  "objects": [
-    { "type":"axes", "grid":true, "labels":true },
-    { "type":"plot", "expr":"(x-a)^2", "color":"#d4af37", "width":3, "appearAt":0 },
-    { "type":"point", "x":"a", "y":"a*a", "r":5, "color":"#c0392b", "label":"顶点", "appearAt":1 }
-  ],
-  "steps": [
-    { "text":"基准位置 a=2", "set":{ "a":2 }, "appearAt":0 },
-    { "text":"标记顶点", "set":{ "a":2 }, "appearAt":1 },
-    { "text":"拖动滑块改变 a，顶点实时平移", "set":{ "a":3 }, "animate":true, "appearAt":2 }
-  ]
+  "animation": {
+    "xRange": [-8, 8],
+    "yRange": [-5, 5],
+    "controls": [ { "type":"slider", "id":"a", "label":"a", "min":-5, "max":5, "step":0.1, "value":2 } ],
+    "objects": [
+      { "type":"axes", "grid":true, "labels":true },
+      { "type":"plot", "expr":"(x-a)^2", "color":"#d4af37", "width":3, "appearAt":0 },
+      { "type":"point", "x":"a", "y":"a*a", "r":5, "color":"#c0392b", "label":"顶点", "appearAt":1 }
+    ],
+    "steps": [
+      { "text":"基准位置 a=2", "set":{ "a":2 }, "appearAt":0 },
+      { "text":"标记顶点", "set":{ "a":2 }, "appearAt":1 },
+      { "text":"拖动滑块改变 a，顶点实时平移", "set":{ "a":3 }, "animate":true, "appearAt":2 }
+    ]
+  },
+  "solution": {
+    "thinking": "解题思路：这是二次函数，顶点式为 y=(x-a)²，顶点在 (a, a²)。",
+    "steps": ["写成顶点式 y=(x-a)²", "顶点横坐标 x=a，代入得 y=a²", "故顶点坐标为 (a, a²)"],
+    "answer": "顶点坐标为 (a, a²)"
+  }
 }
+（通用模式把上面的 "isMath" 改为 false，并只保留 "topic" 与 "answer" 两个字段，不要输出 animation / solution。）
 
 【few-shot 示例 1 —— 勾股定理（分步构造 + 双滑块交互）】
 用户："勾股定理 a=3 b=4 求 c"
@@ -231,16 +341,44 @@ const GEN_SYSTEM_PROMPT = `你是"数道万象"数学动画生成引擎。根据
   ]
 }
 
+【few-shot 示例 5 —— 数学模式完整结构（含解题思路与步骤）】
+用户："一个圆心角为 60° 的扇形，半径 3，面积是多少"
+{
+  "isMath": true,
+  "title":"扇形面积 = ½r²θ",
+  "subtitle":"几何直观 · 模型意识",
+  "animation":{
+    "xRange":[-4,4], "yRange":[-1,4],
+    "controls":[ {"type":"slider","id":"r","label":"r","min":1,"max":4,"step":0.1,"value":3}, {"type":"slider","id":"deg","label":"θ","min":10,"max":180,"step":1,"value":60} ],
+    "objects":[
+      {"type":"axes","grid":false,"labels":false,"appearAt":0},
+      {"type":"sector","cx":0,"cy":0,"r":"r","start":0,"end":"deg","color":"#d4af37","fill":true,"appearAt":0},
+      {"type":"text","x":1.2,"y":2.4,"content":"面积 = ½·r²·θ(弧度)","color":"#c0392b","size":16,"appearAt":2}
+    ],
+    "steps":[
+      {"text":"画一个半径为 r、圆心角为 θ 的扇形","set":{"r":3,"deg":60},"appearAt":0},
+      {"text":"扇形面积 = ½ × r² × θ（θ 用弧度）。拖动滑块可改变半径与角度，看面积如何变化","set":{"r":3,"deg":60},"animate":true,"appearAt":2}
+    ]
+  },
+  "solution":{
+    "thinking":"扇形是圆的一部分，面积与圆心角成正比。先要把角度换算成弧度，再用公式 S = ½r²θ 计算。",
+    "steps":["圆心角 θ=60°，换算为弧度：60°×π/180 = π/3","套用扇形面积公式 S = ½·r²·θ = ½×3²×(π/3)","化简：S = ½×9×π/3 = 3π/2 ≈ 4.71"],
+    "answer":"面积 S = 3π/2 ≈ 4.71"
+  }
+}
+
 【附件支持】
-- 用户可能会上传图片或文件。若请求中附带图片 base64 或文件文本，请结合附件内容理解题意并生成对应的教学动画。
-- 图片中若是几何图形、函数图像、公式或题目照片，请识别其中的数学对象（点、线、圆、坐标、方程等）并用相应对象类型绘制。
+- 用户可能会上传图片或文件。若请求中附带图片 base64 或文件文本，请结合附件内容理解题意并生成对应的教学动画与解题过程。
+- 图片中若是几何图形、函数图像、公式或题目照片，请**仔细识别其中的数学对象（点、线、圆、坐标、方程、数字）**，并用相应对象类型绘制，同时据此写出解题步骤。
 - 文件中若是文字题目，请提取关键条件、未知数与问题，生成可交互动画来演示求解过程。
+- 附件内容即题目本身：不要因为题目以图片/文件形式给出就拒绝作答，应从附件中读取题目并解答。
 
 【规则】
-- 必须有 "title"、"controls"（≥1 slider）、"steps"（≥3）、"objects"（≥1）。
+- 数学模式下，animation 字段必须有 "controls"（≥1 slider）、"steps"（≥3）、"objects"（≥1）；solution 必填。
 - type 只取上面 16 种之一；未知字段会被前端忽略。优先使用新类型（sector/angle/vector/polygon/curve/grid）让动画更生动。
-- 每一步 text 会被中文语音朗读，请写得口语化。
-- 不要输出解释文字，直接输出 JSON。`;
+- animation.steps[].text 会被中文语音朗读，请写得口语化，并聚焦"这一步在演示 / 画什么"，不要重复 solution 的计算细节。
+- **只输出一个 JSON 对象，且必须含 "isMath" 字段**：isMath=true 时返回 animation + solution；isMath=false 时只返回 topic + answer，不要输出 animation / solution。
+- 不要输出 JSON 之外的解释文字，不要用 \`\`\`json 包裹。`;
 
 const CHAT_SYSTEM_PROMPT = `你是"数道万象"数学助手。请用简洁、专业的中文回答数学问题（1-3 句）。如果涉及具体计算请给出结果。`;
 
@@ -334,28 +472,54 @@ function generateTask(question, context) {
   return callDeepSeek([
     { role: 'system', content: GEN_SYSTEM_PROMPT },
     { role: 'user', content: userContent }
-  ], 1500).then(text => {
-    const spec = extractJSON(text);
-    if (!spec || !Array.isArray(spec.objects) || !spec.objects.length) {
-      return { taskId: null, answer: text.trim(), spec: null };
+  ], 2500).then(text => {
+    const obj = extractJSON(text);
+    // 解析失败：当作通用回答兜底
+    if (!obj || typeof obj !== 'object') {
+      return { taskId: null, isMath: false, answer: (text || '').trim(), spec: null, solution: null, topic: '' };
     }
+    // 通用模式（非数学问题）：按 DeepSeek 输出直接回答
+    if (obj.isMath === false || !obj.isMath) {
+      return {
+        taskId: null,
+        isMath: false,
+        answer: (obj.answer || (text || '').trim()),
+        spec: null,
+        solution: null,
+        topic: obj.topic || ''
+      };
+    }
+    // 数学模式：取出 animation 与 solution
+    const anim = obj.animation || {};
+    const spec = {
+      title: anim.title || obj.title || 'AI 生成的交互式动画',
+      subtitle: anim.subtitle || obj.subtitle || '',
+      xRange: Array.isArray(anim.xRange) ? anim.xRange : [-8, 8],
+      yRange: Array.isArray(anim.yRange) ? anim.yRange : [-5, 5],
+      controls: Array.isArray(anim.controls) ? anim.controls : [],
+      objects: Array.isArray(anim.objects) ? anim.objects.filter(o => o && typeof o.type === 'string') : [],
+      steps: Array.isArray(anim.steps) ? anim.steps : []
+    };
+    let solution = null;
+    if (obj.solution && (obj.solution.thinking || (Array.isArray(obj.solution.steps) && obj.solution.steps.length) || obj.solution.answer)) {
+      solution = {
+        thinking: obj.solution.thinking || '',
+        steps: Array.isArray(obj.solution.steps) ? obj.solution.steps : [],
+        answer: obj.solution.answer || ''
+      };
+    }
+    const answer = (solution && solution.answer) ? solution.answer : (text || '').trim();
     const taskId = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     const record = {
       taskId,
       question,
       createdAt: new Date().toISOString(),
-      spec: {
-        title: spec.title || 'AI 生成的交互式动画',
-        subtitle: spec.subtitle || '',
-        xRange: Array.isArray(spec.xRange) ? spec.xRange : [-8, 8],
-        yRange: Array.isArray(spec.yRange) ? spec.yRange : [-5, 5],
-        controls: Array.isArray(spec.controls) ? spec.controls : [],
-        objects: spec.objects.filter(o => o && typeof o.type === 'string'),
-        steps: Array.isArray(spec.steps) ? spec.steps : []
-      }
+      isMath: true,
+      spec,
+      solution
     };
     saveTask(record);
-    return { taskId, answer: text.trim(), spec: record.spec };
+    return { taskId, isMath: true, title: spec.title, answer, spec, solution };
   });
 }
 
@@ -393,6 +557,7 @@ function sendJSON(res, code, obj) {
 function handleChat(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
   if (req.method !== 'POST') { sendJSON(res, 405, { error: 'method not allowed' }); return; }
+  if (!guardNode(req, res)) return;
   readBody(req).then(o => {
     const question = o.question, context = o.context;
     if (!question && !context) { sendJSON(res, 400, { error: 'no question' }); return; }
@@ -404,6 +569,7 @@ function handleChat(req, res) {
 function handleTasks(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
   if (req.method !== 'POST') { sendJSON(res, 405, { error: 'method not allowed' }); return; }
+  if (!guardNode(req, res)) return;
   readBody(req).then(o => {
     const question = o.question, context = o.context;
     if (!question && !context) { sendJSON(res, 400, { error: 'no question' }); return; }
@@ -423,7 +589,13 @@ function handleTeachingPreview(req, res) {
   if (!id) { sendJSON(res, 400, { error: 'no id' }); return; }
   const record = getTask(id);
   if (!record) { sendJSON(res, 404, { error: 'task not found' }); return; }
-  sendJSON(res, 200, { taskId: record.taskId, spec: record.spec });
+  sendJSON(res, 200, {
+    taskId: record.taskId,
+    isMath: record.isMath,
+    title: record.spec && record.spec.title,
+    spec: record.spec,
+    solution: record.solution
+  });
 }
 
 // 供 server.js 使用：处理 /api/*，返回 true 表示已处理（无需静态托管）。
@@ -451,6 +623,8 @@ function jsonResponse(code, obj) {
 async function handleChatWeb(request) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (request.method !== 'POST') return jsonResponse(405, { error: 'method not allowed' });
+  const blocked = guardWeb(request);
+  if (blocked) return blocked;
   const o = await readBodyWeb(request);
   const question = o.question, context = o.context;
   if (!question && !context) return jsonResponse(400, { error: 'no question' });
@@ -462,6 +636,8 @@ async function handleChatWeb(request) {
 async function handleTasksWeb(request) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (request.method !== 'POST') return jsonResponse(405, { error: 'method not allowed' });
+  const blocked = guardWeb(request);
+  if (blocked) return blocked;
   const o = await readBodyWeb(request);
   const question = o.question, context = o.context;
   if (!question && !context) return jsonResponse(400, { error: 'no question' });
@@ -478,7 +654,13 @@ async function handleTeachingPreviewWeb(request) {
   if (!id) return jsonResponse(400, { error: 'no id' });
   const record = getTask(id);
   if (!record) return jsonResponse(404, { error: 'task not found' });
-  return jsonResponse(200, { taskId: record.taskId, spec: record.spec });
+  return jsonResponse(200, {
+    taskId: record.taskId,
+    isMath: record.isMath,
+    title: record.spec && record.spec.title,
+    spec: record.spec,
+    solution: record.solution
+  });
 }
 
 module.exports = {
