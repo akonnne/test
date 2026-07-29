@@ -1,0 +1,13 @@
+{
+  "name": "shudao-wanxiang",
+  "version": "1.0.0",
+  "description": "数道·万象 数学教学平台 — 前端 Canvas 动画 + 对话式 AI助教 + Node 后端（DeepSeek 实时生成交互式教学动画）",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
