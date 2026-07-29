@@ -120,6 +120,24 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* 旋转太极图标：替换全站 AI 机器人图标 */
+.taiji-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.15em;
+    background:
+        radial-gradient(circle at 50% 25%, #fff 12%, transparent 13%),
+        radial-gradient(circle at 50% 75%, #000 12%, transparent 13%),
+        radial-gradient(circle at 50% 25%, #000 25%, transparent 26%),
+        radial-gradient(circle at 50% 75%, #fff 25%, transparent 26%),
+        linear-gradient(to right, #000 50%, #fff 50%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    animation: taiji-spin 3s linear infinite;
+}
+
 .loader-text {
     font-family: var(--font-serif);
     color: var(--gold-dim);

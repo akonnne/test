@@ -1726,7 +1726,7 @@
             displayQuestion = (q ? q + ' ' : '') + `（附 ${currentAttachments.length} 个附件）`;
         }
 
-        askResult.innerHTML = '<div class="ask-result-title">🤖 AI 思考中</div><div class="ask-result-body"><span class="ask-thinking">·</span></div>';
+        askResult.innerHTML = '<div class="ask-result-title"><span class="taiji-icon" aria-hidden="true"></span> AI 思考中</div><div class="ask-result-body"><span class="ask-thinking">·</span></div>';
         askResult.style.display = 'block';
 
         // 主路径：调用生成引擎 /api/tasks（后端按问题实时生成动画 spec，密钥仅服务端）
@@ -1755,10 +1755,18 @@
 
         const answer = cleanAnswer(task.answer || '');
         const spec = task.spec;
-        if (spec && Array.isArray(spec.objects) && spec.objects.length) {
-            showGeneratedResult(displayQuestion, answer, spec);
-        } else {
+        const solution = task.solution || null;
+        const isMath = task.isMath === true;
+
+        if (!isMath) {
+            // 非数学问题：直接按 DeepSeek 输出回答
             showTextReply(answer);
+        } else if (spec && Array.isArray(spec.objects) && spec.objects.length) {
+            // 数学问题 + 可交互动画：展示动画与解题思路/步骤
+            showGeneratedResult(displayQuestion, answer, spec, solution, task.taskId);
+        } else {
+            // 数学问题但没有可生成动画：直接展示解题思路与步骤
+            showSolutionText(displayQuestion, answer, solution);
         }
 
         // 提交后清空已上传附件
@@ -1790,7 +1798,7 @@
             reply = reply.replace(/###ACTION###\s*\{[\s\S]*?\}/, '');
         }
         const cleanReply = reply.trim();
-        askResult.innerHTML = `<div class="ask-result-title">🤖 数学助手</div>
+        askResult.innerHTML = `<div class="ask-result-title"><span class="taiji-icon" aria-hidden="true"></span> 数学助手</div>
             <div class="ask-result-body">${cleanReply.replace(/\n/g, '<br>')}</div>
             ${actionHtml}`;
         askResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1798,12 +1806,14 @@
         else $('#ask-canvas-wrap').style.display = 'none';
     }
 
-    // 生成动画结果：在 AI助教 对话框内展示交互式动画
-    function showGeneratedResult(question, answer, spec) {
+    // 数学问题 + 可交互动画：展示动画与解题思路/步骤
+    function showGeneratedResult(question, answer, spec, solution, taskId) {
+        const solHtml = (window.JX && window.JX.renderSolution) ? window.JX.renderSolution(solution) : '';
         const displayAnswer = (answer && answer.length > 4) ? answer : ('已根据你的提问生成交互式教学动画：' + (spec.title || ''));
-        askResult.innerHTML = `<div class="ask-result-title">🤖 AI 生成动画</div>
-            <div class="ask-result-body">${displayAnswer.replace(/\n/g, '<br>')}</div>
-            <button class="ask-gen-btn" id="ask-open-ai-dialog">▶ 在 AI助教 对话框中查看动画</button>`;
+        const previewLink = taskId ? `<a class="ask-result-link" href="/teaching.html?id=${encodeURIComponent(taskId)}" target="_blank" rel="noopener">↗ 打开讲解预览页</a>` : '';
+        askResult.innerHTML = `<div class="ask-result-title"><span class="taiji-icon" aria-hidden="true"></span> AI 生成动画 + 解题</div>
+            <div class="ask-result-body">${displayAnswer.replace(/\n/g, '<br>')}${solHtml}</div>
+            <button class="ask-gen-btn" id="ask-open-ai-dialog">▶ 在 AI助教 对话框中查看 / 播放动画</button>${previewLink}`;
         askResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         $('#ask-canvas-wrap').style.display = 'none';
         const btn = document.getElementById('ask-open-ai-dialog');
@@ -1814,7 +1824,8 @@
                         title: spec.title || question,
                         initialQuestion: question,
                         initialAnswer: displayAnswer,
-                        initialSpec: spec
+                        initialSpec: spec,
+                        initialSolution: solution
                     });
                 }
             });
@@ -1826,13 +1837,24 @@
                     title: spec.title || question,
                     initialQuestion: question,
                     initialAnswer: displayAnswer,
-                    initialSpec: spec
+                    initialSpec: spec,
+                    initialSolution: solution
                 });
             }, 250);
         }
     }
 
-    // 核心生成函数：返回 { answer, spec }，供首页搜索栏和弹层 AI 对话框复用
+    // 数学问题但没有可生成动画：直接展示解题思路与步骤
+    function showSolutionText(question, answer, solution) {
+        const solHtml = (window.JX && window.JX.renderSolution) ? window.JX.renderSolution(solution) : '';
+        const displayAnswer = answer || '已为你生成解题思路与步骤。';
+        askResult.innerHTML = `<div class="ask-result-title"><span class="taiji-icon" aria-hidden="true"></span> AI 解题</div>
+            <div class="ask-result-body">${displayAnswer.replace(/\n/g, '<br>')}${solHtml}</div>`;
+        askResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        $('#ask-canvas-wrap').style.display = 'none';
+    }
+
+    // 核心生成函数：返回 { answer, spec, solution, isMath, topic }，供首页搜索栏和弹层 AI 对话框复用
     // question 可以是字符串，也可以是 { question, context }
     async function generateAnimation(question) {
         let q = '', context = '';
@@ -1852,7 +1874,16 @@
         const task = await res.json();
         const answer = cleanAnswer(task.answer || '');
         const spec = task.spec;
-        return { answer, spec, question: q };
+        const solution = task.solution || null;
+        const isMath = task.isMath === true;
+        const topic = task.topic || '';
+        // 持久化到本地，便于 /teaching.html?id= 预览页（同浏览器）回看
+        if (task.taskId) {
+            try {
+                localStorage.setItem('sdwm_task_' + task.taskId, JSON.stringify({ taskId: task.taskId, title: task.title || (spec && spec.title) || '', spec: spec, solution: solution, isMath: isMath }));
+            } catch (e) { /* 忽略隐私模式等写入失败 */ }
+        }
+        return { answer, spec, solution, isMath, topic, question: q, taskId: task.taskId };
     }
 
     // 供教学卡片「问 AI」按钮调用

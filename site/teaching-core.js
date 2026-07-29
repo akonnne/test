@@ -516,12 +516,12 @@
         var answer = (meta && meta.answer) ? meta.answer : '';
         card.innerHTML =
             '<div class="jx-card-head">' +
-            '  <span class="jx-card-icon">🤖</span>' +
+            '  <span class="jx-card-icon"><span class="taiji-icon" aria-hidden="true"></span></span>' +
             '  <div class="jx-card-titles">' +
             '    <h3 class="jx-card-title">' + title + '</h3>' +
             '    <p class="jx-card-tags">' + sub + '</p>' +
             '  </div>' +
-            '  <button class="jx-card-ai-btn" aria-label="AI助教" title="让 AI 继续讲解">🤖 AI助教</button>' +
+            '  <button class="jx-card-ai-btn" aria-label="AI助教" title="让 AI 继续讲解"><span class="taiji-icon" aria-hidden="true"></span> AI助教</button>' +
             '</div>' +
             (answer ? '<p class="jx-problem">' + answer.replace(/</g, '&lt;') + '</p>' : '') +
             '<div class="jx-gen-mount"></div>';
@@ -642,7 +642,7 @@
             '      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' +
             '      <span class="jx-like-count">' + like + '</span>' +
             '    </button>' +
-            '    <button class="jx-thumb-ask" aria-label="问 AI" title="让 AI 用动画讲解">🤖 问 AI</button>' +
+            '    <button class="jx-thumb-ask" aria-label="问 AI" title="让 AI 用动画讲解"><span class="taiji-icon" aria-hidden="true"></span> 问 AI</button>' +
             '  </div>' +
             '  <p class="jx-thumb-desc">' + (a.problem || a.desc) + '</p>' +
             '  <div class="jx-thumb-tags">' + tags.map(function (t) { return '<span class="jx-thumb-tag">' + t + '</span>'; }).join('') + '</div>' +
@@ -697,7 +697,7 @@
             '    <h3 class="jx-card-title">' + a.title + '</h3>' +
             '    <p class="jx-card-tags">' + pickCompetencies(a).join(' · ') + '</p>' +
             '  </div>' +
-            '  <button class="jx-card-ai-btn" aria-label="AI助教" title="让 AI 用动画讲解">🤖 AI助教</button>' +
+            '  <button class="jx-card-ai-btn" aria-label="AI助教" title="让 AI 用动画讲解"><span class="taiji-icon" aria-hidden="true"></span> AI助教</button>' +
             '</div>' +
             '<div class="jx-card-meta">' +
             '  <span class="jx-card-field">' + a.field + '</span>' +
@@ -720,8 +720,31 @@
         return card;
     }
 
-    /* AI助教对话窗口：点击弹层卡片头部「🤖 AI助教」打开，按 xsyy 机制生成动画并内嵌播放 */
+    /* AI助教对话窗口：点击弹层卡片头部「AI助教」打开，按 xsyy 机制生成动画并内嵌播放 */
     var aiDialog = null;
+
+    // 把 solution（解题思路 / 解题步骤 / 答案）渲染成安全 HTML（供首页 ask 结果与对话气泡复用）
+    function renderSolutionHtml(s) {
+        if (!s) return '';
+        var esc = function (t) {
+            return (t == null ? '' : String(t)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        };
+        var h = '<div class="jx-solution">';
+        if (s.thinking) {
+            h += '<div class="jx-solution-block"><div class="jx-solution-label">💡 解题思路</div><div class="jx-solution-text">' + esc(s.thinking) + '</div></div>';
+        }
+        if (Array.isArray(s.steps) && s.steps.length) {
+            h += '<div class="jx-solution-block"><div class="jx-solution-label">📐 解题步骤</div><ol class="jx-solution-steps">';
+            s.steps.forEach(function (st) { h += '<li>' + esc(st) + '</li>'; });
+            h += '</ol></div>';
+        }
+        if (s.answer) {
+            h += '<div class="jx-solution-block jx-solution-answer"><div class="jx-solution-label">✅ 最终答案</div><div class="jx-solution-text">' + esc(s.answer) + '</div></div>';
+        }
+        h += '</div>';
+        return h;
+    }
+
     function openAiDialog(a) {
         a = a || {};
         if (aiDialog) { aiDialog.remove(); aiDialog = null; }
@@ -737,7 +760,7 @@
             '<div class="jx-ai-dialog-shell jx-ai-dialog-light" role="dialog" aria-modal="true">' +
             '  <button class="jx-ai-dialog-close" aria-label="关闭">×</button>' +
             '  <div class="jx-ai-dialog-head">' +
-            '    <span class="jx-ai-dialog-icon">🤖</span>' +
+            '    <span class="jx-ai-dialog-icon"><span class="taiji-icon" aria-hidden="true"></span></span>' +
             '    <div>' +
             '      <h4 class="jx-ai-dialog-title">AI助教</h4>' +
             '      <p class="jx-ai-dialog-sub">用动画讲解「' + title + '」</p>' +
@@ -931,10 +954,14 @@
                 var data = await gen({ question: q, context: context });
                 var answer = data.answer || '';
                 var spec = data.spec;
+                var solution = data.solution || null;
                 thinking.remove();
                 var html = '';
                 if (answer) {
                     html += '<div class="jx-ai-dialog-answer">' + answer.replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>';
+                }
+                if (solution && typeof renderSolutionHtml === 'function') {
+                    html += renderSolutionHtml(solution);
                 }
                 if (!spec || !Array.isArray(spec.objects) || !spec.objects.length) {
                     if (!html) html += '<div class="jx-ai-dialog-hint">💡 这个问题暂时没能生成可交互动画，我再用文字补充说明一下。</div>';
@@ -967,6 +994,9 @@
             var initHtml = '';
             if (a.initialAnswer) {
                 initHtml += '<div class="jx-ai-dialog-answer">' + (a.initialAnswer + '').replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>';
+            }
+            if (a.initialSolution && typeof renderSolutionHtml === 'function') {
+                initHtml += renderSolutionHtml(a.initialSolution);
             }
             if (!a.initialSpec || !Array.isArray(a.initialSpec.objects) || !a.initialSpec.objects.length) {
                 if (!initHtml) initHtml += '<div class="jx-ai-dialog-hint">💡 已收到你的问题，可以继续追问。</div>';
@@ -1117,6 +1147,7 @@
         openModal: openModal,
         openGenerated: openGenerated,
         openAiDialog: openAiDialog,
+        renderSolution: renderSolutionHtml,
         closeModal: closeModal,
         $: $, $$: $$, lerp: lerp, clamp: clamp, rand: rand, TAU: TAU,
         isInViewport: isInViewport,
