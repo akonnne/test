@@ -60,7 +60,13 @@ const DEEPSEEK_KEY = process.env.DEEPSEEK_KEY || '';
 // ------------------------------------------------------------------
 const ALLOWED_ORIGINS = (function () {
   const list = ['https://shudao-wanxiang.pages.dev'];
-  if (process.env.SITE_ORIGIN) list.push(process.env.SITE_ORIGIN);
+  // 支持通过环境变量注入隧道/自定义域名（逗号分隔）
+  if (process.env.SITE_ORIGIN) {
+    process.env.SITE_ORIGIN.split(',').map(s => s.trim()).filter(Boolean).forEach(o => list.push(o));
+  }
+  if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean).forEach(o => list.push(o));
+  }
   // 本地开发环境一并放行
   list.push('http://localhost:8099', 'http://localhost:3000',
             'http://127.0.0.1:8099', 'http://127.0.0.1:3000');
