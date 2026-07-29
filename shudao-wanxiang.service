@@ -1,0 +1,16 @@
+[Unit]
+Description=数道·万象 Node 后端
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/shudao-wanxiang
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+Environment="DEEPSEEK_KEY=sk-xxxxxxxx"
+Environment="ALLOWED_ORIGINS=https://shudao-wanxiang.yourdomain.com"
+
+[Install]
+WantedBy=multi-user.target
