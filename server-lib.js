@@ -248,7 +248,9 @@ const CHAT_SYSTEM_PROMPT = `你是"数道万象"数学助手。请用简洁、�
  * 底层调用与工具
  * ------------------------------------------------------------------ */
 function callDeepSeek(messages, maxTokens) {
-  if (!DEEPSEEK_KEY) {
+  // 动态读取，支持 Cloudflare Pages Functions（运行时 env 才注入）以及本地/Vercel
+  const key = process.env.DEEPSEEK_KEY || DEEPSEEK_KEY || '';
+  if (!key) {
     return Promise.reject(new Error('未配置 DEEPSEEK_KEY：请在 Cloudflare/Vercel 环境变量或本地 .env 中设置（详见 DEPLOY.md）'));
   }
   const payload = JSON.stringify({
@@ -261,7 +263,7 @@ function callDeepSeek(messages, maxTokens) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + DEEPSEEK_KEY
+      'Authorization': 'Bearer ' + key
     },
     body: payload
   }).then(function (res) {
