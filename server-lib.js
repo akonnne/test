@@ -1,4 +1,4 @@
-/* 数道·万象 —— 后端共享逻辑（本地 server.js 与 Vercel Serverless 函数共用）
+/* 数道·万象 —— 后端共享逻辑（本地 server.js / Vercel 函数 / Cloudflare Pages Functions 共用）
  *
  * 安全要点：
  *  1. DeepSeek 密钥只存在本服务端（环境变量或本文件常量），浏览器永远拿不到。
@@ -11,19 +11,22 @@
  *  POST /api/chat                  -> 通用问答兜底
  *  GET  /api/teachings/:id/preview -> 返回该 task 的 spec（前端拉取后安全渲染）
  *
- * 本模块同时被两种运行方式加载：
+ * 本模块同时被三种运行方式加载：
  *  - 本地/VPS：server.js 用 http 起服务，/api/* 交给 routeApi，其余静态托管。
  *  - Vercel：api/tasks.js、api/chat.js、api/teachings/[id]/preview.js 各 export 一个 (req,res) handler。
+ *  - Cloudflare Pages Functions：functions/api/tasks.js、functions/api/chat.js 复用 handleTasksWeb/handleChatWeb（Request->Response）。
  */
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+// 跨平台说明：本文件被 Node（server.js / Vercel 函数）与 Cloudflare Pages Functions（Workers 运行时）共同加载。
+// Cloudflare 运行时没有 Node 内置模块（fs/path/os/https），但 fetch 为原生。
+// 因此：不顶层 require 任何 Node 专属模块；Node 专属操作一律 try{require(...)} 懒加载，
+// 在缺失模块的环境（Cloudflare）自动降级（.env 不加载、任务不落盘，但内存 + fetch 仍可用）。
 
-// 轻量读取项目根目录 .env（仅本地/VPS 用；Vercel 直接用平台环境变量）。不引入第三方依赖。
-// .env 必须加入 .gitignore，绝不提交，避免密钥泄露。
+// 轻量读取项目根目录 .env（仅本地/VPS 用；Cloudflare/Vercel 直接用平台环境变量）。
+// 在缺少 fs 的环境（Cloudflare）静默跳过。
 (function loadEnvFile() {
   try {
+    const fs = require('fs');
+    const path = require('path');
     const envPath = path.join(__dirname, '.env');
     if (!fs.existsSync(envPath)) return;
     const txt = fs.readFileSync(envPath, 'utf8');
@@ -33,26 +36,34 @@ const os = require('os');
         process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
       }
     });
-  } catch (e) { /* ignore */ }
+  } catch (e) { /* 无 fs / .env：忽略，依赖平台环境变量 */ }
 })();
 
-// CORS：同源（如 Vercel 同域名）无需，跨域（如静态放别处、函数放 Vercel）时放行。
+// CORS：同源（Cloudflare/Vercel 同域名）无需，跨域（静态与函数分离）时放行。
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type'
 };
 
-// 密钥仅服务端可见：优先读环境变量 DEEPSEEK_KEY（Vercel 平台变量 / 本地 .env）。
-// 本文件不再内置任何真实密钥；缺失时生成接口返回 500 并提示配置。
-// 切勿将密钥写入代码或前端可访问的文件。
+// 密钥仅服务端可见：优先读环境变量 DEEPSEEK_KEY（平台变量 / 本地 .env）。
+// 本文件不内置任何真实密钥；缺失时生成接口返回 502 并提示配置。
 const DEEPSEEK_KEY = process.env.DEEPSEEK_KEY || '';
 
-// 任务落盘目录：Vercel 等 Serverless 环境只读项目目录，写到 /tmp；本地默认 D:/728/generated。
-const GEN_DIR = process.env.GEN_DIR ||
-  (process.env.VERCEL ? path.join(os.tmpdir(), 'sdwm-generated')
-                       : path.join(__dirname, 'generated'));
-try { if (!fs.existsSync(GEN_DIR)) fs.mkdirSync(GEN_DIR, { recursive: true }); } catch (e) {}
+// 任务落盘目录：有 fs 时本地/Serverless 用 GEN_DIR；无 fs（Cloudflare）降级到 /tmp（落盘会静默失败，内存仍可用）。
+const GEN_DIR = (function () {
+  if (process.env.GEN_DIR) return process.env.GEN_DIR;
+  try {
+    const path = require('path');
+    return path.join(__dirname, 'generated');
+  } catch (e) {
+    return '/tmp/sdwm-generated';
+  }
+})();
+try {
+  const fs = require('fs');
+  if (!fs.existsSync(GEN_DIR)) fs.mkdirSync(GEN_DIR, { recursive: true });
+} catch (e) { /* 只读环境忽略 */ }
 
 /* ------------------------------------------------------------------ *
  * 生成动画 spec 的系统提示
@@ -238,38 +249,27 @@ const CHAT_SYSTEM_PROMPT = `你是"数道万象"数学助手。请用简洁、�
  * ------------------------------------------------------------------ */
 function callDeepSeek(messages, maxTokens) {
   if (!DEEPSEEK_KEY) {
-    return Promise.reject(new Error('未配置 DEEPSEEK_KEY：请在 Vercel 环境变量或本地 .env 中设置（详见 DEPLOY.md）'));
+    return Promise.reject(new Error('未配置 DEEPSEEK_KEY：请在 Cloudflare/Vercel 环境变量或本地 .env 中设置（详见 DEPLOY.md）'));
   }
-  return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({
-      model: 'deepseek-chat',
-      messages: messages,
-      temperature: 0.4,
-      max_tokens: maxTokens || 1500
+  const payload = JSON.stringify({
+    model: 'deepseek-chat',
+    messages: messages,
+    temperature: 0.4,
+    max_tokens: maxTokens || 1500
+  });
+  return fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + DEEPSEEK_KEY
+    },
+    body: payload
+  }).then(function (res) {
+    return res.text().then(function (text) {
+      if (!res.ok) throw new Error('DeepSeek ' + res.status + ' ' + text);
+      try { return JSON.parse(text).choices[0].message.content; }
+      catch (e) { throw new Error('DeepSeek 返回无法解析: ' + text.slice(0, 200)); }
     });
-    const req = https.request({
-      hostname: 'api.deepseek.com',
-      path: '/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + DEEPSEEK_KEY,
-        'Content-Length': Buffer.byteLength(payload)
-      }
-    }, (res) => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => {
-        if (res.statusCode !== 200) { reject(new Error('DeepSeek ' + res.statusCode + ' ' + data)); return; }
-        try {
-          const json = JSON.parse(data);
-          resolve(json.choices[0].message.content);
-        } catch (e) { reject(e); }
-      });
-    });
-    req.on('error', reject);
-    req.write(payload);
-    req.end();
   });
 }
 
@@ -312,13 +312,19 @@ const store = new Map();
 function saveTask(record) {
   store.set(record.taskId, record);
   try {
+    const fs = require('fs');
+    const path = require('path');
     if (!fs.existsSync(GEN_DIR)) fs.mkdirSync(GEN_DIR, { recursive: true });
     fs.writeFileSync(path.join(GEN_DIR, record.taskId + '.json'), JSON.stringify(record, null, 2));
-  } catch (e) { /* 只读环境静默失败，内存中仍有 */ }
+  } catch (e) { /* 只读/无 fs 环境静默失败，内存中仍有 */ }
 }
 function getTask(taskId) {
   if (store.has(taskId)) return store.get(taskId);
-  try { return JSON.parse(fs.readFileSync(path.join(GEN_DIR, taskId + '.json'), 'utf8')); } catch (e) { return null; }
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    return JSON.parse(fs.readFileSync(path.join(GEN_DIR, taskId + '.json'), 'utf8'));
+  } catch (e) { return null; }
 }
 
 function generateTask(question, context) {
@@ -427,6 +433,52 @@ function routeApi(req, res) {
   return false;
 }
 
+/* ------------------------------------------------------------------ *
+ * Web 标准适配层（Cloudflare Pages Functions / Vercel Edge / Worker）
+ * 输入为 Web 标准 Request，返回 Response；fetch 在 Cloudflare 与 Node18+ 均原生可用。
+ * ------------------------------------------------------------------ */
+async function readBodyWeb(request) {
+  try { return await request.json(); } catch (e) { return {}; }
+}
+function jsonResponse(code, obj) {
+  return new Response(JSON.stringify(obj), {
+    status: code,
+    headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, CORS)
+  });
+}
+async function handleChatWeb(request) {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+  if (request.method !== 'POST') return jsonResponse(405, { error: 'method not allowed' });
+  const o = await readBodyWeb(request);
+  const question = o.question, context = o.context;
+  if (!question && !context) return jsonResponse(400, { error: 'no question' });
+  try {
+    const reply = await chatReply(question || '', context || '');
+    return jsonResponse(200, { reply });
+  } catch (e) { return jsonResponse(502, { error: String(e && e.message || e) }); }
+}
+async function handleTasksWeb(request) {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+  if (request.method !== 'POST') return jsonResponse(405, { error: 'method not allowed' });
+  const o = await readBodyWeb(request);
+  const question = o.question, context = o.context;
+  if (!question && !context) return jsonResponse(400, { error: 'no question' });
+  try {
+    const r = await generateTask(question || '', context || '');
+    return jsonResponse(200, r);
+  } catch (e) { return jsonResponse(502, { error: String(e && e.message || e) }); }
+}
+async function handleTeachingPreviewWeb(request) {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+  if (request.method !== 'GET') return jsonResponse(405, { error: 'method not allowed' });
+  let id = null;
+  try { id = new URL(request.url).pathname.match(/^\/api\/teachings\/([\w-]+)\/preview$/)[1]; } catch (e) {}
+  if (!id) return jsonResponse(400, { error: 'no id' });
+  const record = getTask(id);
+  if (!record) return jsonResponse(404, { error: 'task not found' });
+  return jsonResponse(200, { taskId: record.taskId, spec: record.spec });
+}
+
 module.exports = {
   CORS,
   DEEPSEEK_KEY,
@@ -444,5 +496,8 @@ module.exports = {
   handleChat,
   handleTasks,
   handleTeachingPreview,
+  handleChatWeb,
+  handleTasksWeb,
+  handleTeachingPreviewWeb,
   routeApi
 };

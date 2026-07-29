@@ -15,13 +15,19 @@
   ```
   D:/728
   ├─ server.js          # 本地/VPS 入口
-  ├─ server-lib.js      # 共享逻辑（prompts / DeepSeek / 路由）
-  ├─ api/
+  ├─ server-lib.js      # 共享逻辑（prompts / DeepSeek / 路由，跨平台）
+  ├─ package.json       # 启动命令（Railway/Vercel 识别）
+  ├─ api/               # Vercel Serverless 函数（Node req/res）
   │  ├─ tasks.js
   │  ├─ chat.js
   │  └─ teachings/[id]/preview.js
+  ├─ functions/         # Cloudflare Pages Functions（Web 标准 Request/Response）
+  │  └─ api/
+  │     ├─ tasks.js
+  │     └─ chat.js
   ├─ site/              # 前端静态站（index.html, app.js, anim-engine.js ...）
   ├─ vercel.json        # Vercel 配置
+  ├─ wrangler.toml      # Cloudflare Pages 配置
   └─ Dockerfile         # 容器部署
   ```
 
@@ -72,6 +78,45 @@ docker run -d --name shudao \
 ```
 然后在云控制台 / 负载均衡 / Nginx 处暴露 8080 并加 TLS。
 适用于 Railway、Fly.io、Render、阿里云/腾讯云容器服务等。
+
+---
+
+## 方案三：Cloudflare Pages（推荐，免手机号 / 免绑卡）
+
+Cloudflare 注册只用邮箱，**不需要手机号验证、也不需要绑卡**，最适合快速上线。
+静态站走全球 CDN（秒开），`/api/*` 由 Pages Functions 处理，二者同域名，前端无需改代码。
+
+> 前提：本项目后端已改造为跨平台——`server-lib.js` 用原生 `fetch` 调用 DeepSeek、
+> 且 `fs/path/os` 全部懒加载容错，Cloudflare Workers 运行时可零依赖运行。
+
+### 方式 A：Git 连接（最简单，推荐）
+1. 把 `D:/728` 推到 GitHub（已推到 `akonnne/test`）。
+2. 打开 https://dash.cloudflare.com/ → 左侧 **Workers & Pages** → **Create** → **Pages** → **Connect to Git**。
+3. 授权 GitHub，选择 `akonnne/test` 仓库。
+4. 构建设置：
+   - **Framework preset**：选 **None**
+   - **Build command**：留空
+   - **Build output directory**：填 `site`
+5. 展开 **Environment variables (production)**，添加：
+   - `DEEPSEEK_KEY` = `sk-你的真实密钥`
+6. 点击 **Save and Deploy**。完成后得到 `*.pages.dev` 域名（**Custom domains** 可绑自己的域名）。
+
+### 方式 B：Wrangler CLI（本地控制）
+```bash
+npm i -g wrangler
+wrangler pages deploy site --branch main
+# 环境变量（或在 Dashboard 添加）：
+wrangler pages secret put DEEPSEEK_KEY --project-name shudao-wanxiang
+```
+
+### 验证
+```bash
+curl -X POST https://你的项目.pages.dev/api/chat -H "Content-Type: application/json" -d "{\"question\":\"1+1\"}"
+curl -X POST https://你的项目.pages.dev/api/tasks -H "Content-Type: application/json" -d "{\"question\":\"勾股定理 a=3 b=4\"}"
+```
+
+> 注意：Cloudflare 免费套餐对单次请求有 CPU 时间限制；DeepSeek 调用主要是网络等待（不占 CPU），
+> 一般没问题。若个别复杂问题超时，可升级 Paid（$5/月起）或改用 Railway/VPS。
 
 ---
 
