@@ -1,0 +1,1705 @@
+/* ============================================================
+   教学动画 · 交互式课堂
+   复用「数道·万象」设计系统的增量样式
+   （原 style.css / app.js 与 7 个原有模块一律未改动）
+   ============================================================ */
+
+/* ---- 教学区块整体 ---- */
+.jx-section .section-header {
+    margin-bottom: 48px;
+}
+
+/* ---- 教学区块：画廊目录 ---- */
+.jx-gallery {
+    max-width: var(--max-w);
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-bottom: 28px;
+}
+
+.jx-gallery-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 22px 22px 18px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.jx-gallery-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--vermilion));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+}
+
+.jx-gallery-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(212, 165, 116, 0.45);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.jx-gallery-card:hover::before {
+    transform: scaleX(1);
+}
+
+.jx-gallery-icon {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(212, 165, 116, 0.1);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    border: 1px solid rgba(212, 165, 116, 0.18);
+}
+
+.jx-gallery-num {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 6px;
+}
+
+.jx-gallery-title {
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    padding-right: 42px;
+}
+
+.jx-gallery-field {
+    font-size: 0.74rem;
+    color: var(--vermilion-light);
+    font-weight: 500;
+    margin-bottom: 10px;
+    letter-spacing: 0.03em;
+}
+
+.jx-gallery-field .jx-new {
+    color: var(--jade);
+    font-weight: 700;
+}
+
+.jx-gallery-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.jx-gallery-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+}
+
+.jx-difficulty {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.jx-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.jx-dot.active {
+    background: var(--gold);
+    box-shadow: 0 0 6px rgba(212, 165, 116, 0.45);
+}
+
+.jx-time {
+    white-space: nowrap;
+}
+
+.jx-gallery-desc {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+    margin-bottom: 12px;
+}
+
+.jx-gallery-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--gold);
+    opacity: 0.7;
+    transition: all 0.3s;
+}
+
+.jx-gallery-card:hover .jx-gallery-arrow {
+    color: var(--vermilion-light);
+    transform: translateX(6px);
+    opacity: 1;
+}
+
+/* ---- 分页 ---- */
+.jx-pagination {
+    max-width: var(--max-w);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 72px;
+    flex-wrap: wrap;
+}
+
+.jx-page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.jx-page-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(212, 165, 116, 0.08);
+}
+
+.jx-page-btn.active {
+    border-color: var(--gold);
+    color: var(--ink);
+    background: var(--gold);
+    font-weight: 700;
+}
+
+/* ---- 模块容器（按分组竖向排列） ---- */
+.jx-grid {
+    max-width: var(--max-w);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 58px;
+}
+
+/* ---- 单个教学模块卡片 ---- */
+.jx-card {
+    background: var(--ink-mid);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius);
+    padding: 26px 26px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    scroll-margin-top: 90px;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+
+.jx-card:hover {
+    border-color: rgba(212, 165, 116, 0.15);
+}
+
+.jx-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.jx-card-num {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.jx-card-num.new {
+    color: var(--jade);
+}
+
+.jx-card-titles {
+    flex: 1;
+    min-width: 0;
+}
+
+.jx-card-title {
+    font-family: var(--font-serif);
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: var(--text-light);
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.jx-card-tags {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    margin: 2px 0 0;
+}
+
+.jx-badge {
+    font-size: 0.68rem;
+    padding: 3px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.jx-badge-new {
+    border-color: var(--jade);
+    color: var(--jade);
+    background: rgba(92, 138, 138, 0.08);
+}
+
+/* 卡片元信息行 */
+.jx-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: -4px;
+}
+
+.jx-card-field {
+    color: var(--vermilion-light);
+    font-weight: 500;
+}
+
+.jx-card-difficulty {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.jx-card-time {
+    margin-left: auto;
+}
+
+/* 题面 */
+.jx-problem {
+    font-size: 0.9rem;
+    line-height: 1.85;
+    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 2px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 0;
+}
+
+.jx-problem .formula {
+    font-family: var(--font-mono);
+    color: var(--gold-bright);
+    font-weight: 600;
+}
+
+.jx-problem .mk {
+    color: var(--vermilion-light);
+    font-weight: 600;
+}
+
+/* 分步预览 */
+.jx-steps-preview {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.jx-steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.jx-step-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+}
+
+.jx-step-n {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 50%;
+    background: rgba(212, 165, 116, 0.12);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    margin-top: 1px;
+}
+
+/* 画布容器 */
+.jx-canvas-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--ink-light);
+    height: 340px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.jx-canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* 控件行 */
+.jx-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+    align-items: flex-end;
+}
+
+.jx-control {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 150px;
+    flex: 1;
+}
+
+.jx-control label {
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-dim);
+}
+
+.jx-control label span {
+    font-family: var(--font-mono);
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.jx-control input[type="text"],
+.jx-control input[type="number"] {
+    padding: 9px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--text-light);
+    background: var(--ink-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.jx-control input[type="text"]:focus,
+.jx-control input[type="number"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.12);
+}
+
+/* 卡片内所有数字/文本输入框统一深色样式（兼容 .control-group 包裹） */
+.jx-card input[type="number"],
+.jx-card input[type="text"] {
+    padding: 9px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--text-light);
+    background: var(--ink-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.jx-card input[type="number"]:focus,
+.jx-card input[type="text"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.12);
+}
+
+.jx-btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* 选项卡（自有关注类，避免与 app.js 的 .proof-btn 全局选择器冲突） */
+.jx-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.jx-tab {
+    padding: 8px 14px;
+    border: 1px solid var(--ink-light);
+    background: transparent;
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    cursor: none;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    font-family: var(--font-serif);
+}
+
+.jx-tab.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(212, 165, 116, 0.1);
+}
+
+/* 答案 / 反馈区 */
+.jx-answer {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--text-light);
+    background: rgba(212, 165, 116, 0.06);
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.jx-answer.ok {
+    border-color: var(--jade);
+    background: rgba(92, 138, 138, 0.08);
+}
+
+.jx-answer.warn {
+    border-color: var(--vermilion-light);
+    background: rgba(231, 76, 60, 0.07);
+}
+
+.jx-answer .hl {
+    color: var(--gold-bright);
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.jx-answer .ok {
+    color: var(--jade);
+    font-weight: 600;
+}
+
+.jx-answer .err {
+    color: var(--vermilion-light);
+    font-weight: 600;
+}
+
+.jx-answer .step-line {
+    display: block;
+    font-family: var(--font-mono);
+    color: var(--text-light);
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.jx-answer .step-line:last-child {
+    border-bottom: none;
+}
+
+/* 分步演示 */
+.jx-steps {
+    font-size: 0.86rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+}
+
+.jx-step {
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    opacity: 0.4;
+}
+
+.jx-step.active {
+    opacity: 1;
+    background: rgba(212, 165, 116, 0.08);
+    border-color: rgba(212, 165, 116, 0.25);
+    color: var(--text-light);
+}
+
+.jx-step.done {
+    opacity: 0.85;
+}
+
+.jx-step .n {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--ink-light);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    margin-right: 8px;
+}
+
+.jx-hint {
+    font-size: 0.78rem;
+    color: var(--gold-dim);
+    line-height: 1.6;
+    font-style: italic;
+}
+
+/* 小徽标 / 标签组 */
+.jx-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.jx-tag {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(212, 165, 116, 0.1);
+    color: var(--gold-dim);
+    border: 1px solid rgba(212, 165, 116, 0.18);
+}
+
+/* 卡片底部按钮 */
+.jx-card-foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+.jx-open-btn {
+    font-size: 0.8rem;
+    padding: 9px 18px;
+}
+
+/* ============================================================
+   xsyy 风格卡片（指南页教学区）
+   ============================================================ */
+.jx-card-thumb {
+    flex: 0 0 auto;
+    width: 280px;
+    height: 390px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.jx-card-thumb:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212, 165, 116, 0.45);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* 卡片顶部背景艺术区 */
+.jx-thumb-art {
+    position: relative;
+    height: 158px;
+    width: 100%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #f7f3ed 0%, #ede6db 100%);
+}
+
+.jx-thumb-art::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.85));
+    pointer-events: none;
+}
+
+.jx-thumb-art svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.jx-thumb-body {
+    padding: 18px 18px 16px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    background: #fff;
+}
+
+.jx-thumb-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.jx-thumb-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: 0.03em;
+    line-height: 1.35;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.jx-thumb-like {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    color: #999;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.jx-thumb-like svg {
+    fill: currentColor;
+    transition: all 0.25s;
+}
+
+.jx-thumb-like:hover {
+    border-color: rgba(212, 165, 116, 0.5);
+    color: var(--gold);
+}
+
+.jx-thumb-like.liked {
+    border-color: rgba(231, 76, 60, 0.45);
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.06);
+}
+
+.jx-thumb-like.liked svg {
+    fill: #e74c3c;
+}
+
+.jx-thumb-desc {
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: #666;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.jx-thumb-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.jx-thumb-tag {
+    font-size: 0.68rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(212, 165, 116, 0.12);
+    color: #9c6a28;
+    border: 1px solid rgba(212, 165, 116, 0.25);
+    white-space: nowrap;
+}
+
+.jx-thumb-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    color: #888;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.jx-thumb-field {
+    color: #9c6a28;
+    font-weight: 500;
+}
+
+.jx-thumb-difficulty {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.jx-thumb-difficulty .jx-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.jx-thumb-difficulty .jx-dot.active {
+    background: var(--gold);
+    box-shadow: none;
+}
+
+.jx-thumb-time {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   Modal 全屏演示
+   ============================================================ */
+.jx-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s, visibility 0.35s;
+    pointer-events: none;
+}
+
+.jx-modal.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.jx-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 10, 0.88);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.jx-modal-shell {
+    position: relative;
+    width: 100%;
+    max-width: 1120px;
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: rgba(18, 22, 32, 0.98);
+    border: 1px solid rgba(212, 165, 116, 0.22);
+    border-radius: 18px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+}
+
+.jx-modal.active .jx-modal-shell {
+    transform: translateY(0) scale(1);
+}
+
+.jx-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(18, 22, 32, 0.9);
+    color: var(--text-light);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+}
+
+.jx-modal-close:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: rotate(90deg);
+}
+
+.jx-modal-body {
+    padding: 58px 34px 34px;
+}
+
+.jx-modal-body .jx-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+}
+
+.jx-modal-body .jx-card-head {
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 4px;
+}
+
+.jx-modal-body .jx-card-title {
+    font-size: 1.4rem;
+}
+
+.jx-modal-body .jx-canvas-wrap {
+    height: 480px;
+    background: #141824;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.jx-modal-body .jx-card-foot {
+    display: none;
+}
+
+/* ---- AI 生成动画弹层：白金色浅色主题 ---- */
+.jx-modal-shell.jx-modal-light {
+    background: rgba(244, 241, 234, 0.98);
+    border-color: rgba(212, 165, 116, 0.35);
+    box-shadow: 0 40px 100px rgba(60, 50, 30, 0.25);
+}
+
+.jx-modal-shell.jx-modal-light .jx-modal-close {
+    background: rgba(244, 241, 234, 0.95);
+    border-color: rgba(90, 78, 60, 0.18);
+    color: #4a4030;
+}
+
+.jx-modal-shell.jx-modal-light .jx-modal-close:hover {
+    border-color: var(--gold);
+    color: var(--gold-dim);
+}
+
+.jx-modal-shell.jx-modal-light .jx-card {
+    color: var(--text-dark);
+}
+
+.jx-modal-shell.jx-modal-light .jx-card-head {
+    border-bottom-color: rgba(90, 78, 60, 0.12);
+}
+
+.jx-modal-shell.jx-modal-light .jx-card-title {
+    color: #2a2a3e;
+}
+
+.jx-modal-shell.jx-modal-light .jx-card-tags {
+    color: #6e6250;
+}
+
+.jx-modal-shell.jx-modal-light .jx-problem {
+    color: #3a3a4e;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(90, 78, 60, 0.10);
+}
+
+body.jx-modal-open {
+    overflow: hidden;
+}
+
+/* 响应式 */
+@media (max-width: 980px) {
+    .jx-gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .jx-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jx-modal-shell {
+        max-height: 96vh;
+        border-radius: 14px;
+    }
+
+    .jx-modal-body {
+        padding: 52px 22px 28px;
+    }
+
+    .jx-modal-body .jx-canvas-wrap {
+        height: 380px;
+    }
+
+    .jx-modal-close {
+        top: 12px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .jx-gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .jx-canvas-wrap {
+        height: 280px;
+    }
+
+    .jx-card {
+        padding: 20px 18px 18px;
+    }
+
+    .jx-modal {
+        padding: 10px;
+    }
+
+    .jx-modal-body .jx-canvas-wrap {
+        height: 300px;
+    }
+}
+
+/* ============================================================
+   弹层卡片「AI 助手」对话框
+   ============================================================ */
+.jx-card-ai-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-family: var(--font-sans);
+    letter-spacing: 0.04em;
+    color: var(--gold-bright);
+    background: rgba(212, 175, 55, 0.10);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+}
+
+.jx-card-ai-btn:hover {
+    background: rgba(212, 175, 55, 0.20);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.20);
+    transform: translateY(-1px);
+}
+
+.jx-ai-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    pointer-events: none;
+}
+
+.jx-ai-dialog.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.jx-ai-dialog-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(60, 55, 45, 0.45);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+}
+
+.jx-ai-dialog-shell {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    max-height: 86vh;
+    overflow: hidden;
+    background: #f8f5ee;
+    border: 1px solid rgba(180, 155, 115, 0.35);
+    border-radius: 18px;
+    box-shadow: 0 40px 100px rgba(80, 65, 40, 0.35);
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.jx-ai-dialog.active .jx-ai-dialog-shell {
+    transform: translateY(0) scale(1);
+}
+
+.jx-ai-dialog-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    z-index: 5;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(120, 105, 75, 0.25);
+    background: rgba(255, 255, 255, 0.7);
+    color: #5a4e3c;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+}
+
+.jx-ai-dialog-close:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: #fff;
+    transform: rotate(90deg);
+}
+
+.jx-ai-dialog-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid rgba(180, 155, 115, 0.18);
+    background: #faf7f0;
+}
+
+.jx-ai-dialog-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    font-size: 1.2rem;
+}
+
+.jx-ai-dialog-title {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #3a3225;
+    margin: 0;
+    letter-spacing: 0.04em;
+}
+
+.jx-ai-dialog-sub {
+    font-size: 0.78rem;
+    color: #7a6e58;
+    margin: 3px 0 0;
+}
+
+/* 聊天消息区域 */
+.jx-ai-dialog-chat {
+    flex: 1;
+    min-height: 0;
+    padding: 18px 22px;
+    overflow-y: auto;
+    background: #f8f5ee;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.jx-ai-msg {
+    display: flex;
+    animation: jx-ai-fadein 0.3s ease;
+}
+
+.jx-ai-msg-user {
+    justify-content: flex-end;
+}
+
+.jx-ai-msg-ai {
+    justify-content: flex-start;
+}
+
+.jx-ai-msg-bubble {
+    max-width: 88%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+.jx-ai-msg-user .jx-ai-msg-bubble {
+    background: linear-gradient(135deg, #e7c463, #d4af37);
+    color: #2a2216;
+    border-bottom-right-radius: 4px;
+}
+
+.jx-ai-msg-ai .jx-ai-msg-bubble {
+    background: #ffffff;
+    color: #3a3225;
+    border: 1px solid rgba(180, 155, 115, 0.22);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 10px rgba(90, 75, 50, 0.05);
+}
+
+.jx-ai-msg-anim {
+    margin-top: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.jx-ai-msg-anim .gen-stage {
+    background: #f4f1ea;
+    border: 1px solid rgba(138, 115, 85, 0.18);
+}
+
+.jx-ai-msg-anim-err {
+    margin: 8px 0 0;
+    color: #b94a48;
+    font-size: 0.82rem;
+}
+
+/* 输入区 */
+.jx-ai-dialog-input-area {
+    padding: 14px 22px 18px;
+    background: #faf7f0;
+    border-top: 1px solid rgba(180, 155, 115, 0.18);
+}
+
+.jx-ai-dialog-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.jx-ai-dialog-uploads {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    border-left: 1px solid rgba(180, 155, 115, 0.18);
+    border-right: 1px solid rgba(180, 155, 115, 0.18);
+}
+
+.jx-ai-dialog-upload {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #8a7a5e;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.jx-ai-dialog-upload:hover {
+    background: rgba(212, 175, 55, 0.12);
+    border-color: rgba(212, 175, 55, 0.35);
+    color: #9c6a28;
+}
+
+.jx-ai-dialog-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 0;
+}
+
+.jx-ai-dialog-attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    background: #fff;
+    border: 1px solid rgba(180, 155, 115, 0.28);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #5a4e3c;
+}
+
+.jx-ai-dialog-attachment img {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.jx-ai-dialog-attachment button {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    background: rgba(192, 57, 43, 0.08);
+    color: #b94a48;
+    font-size: 0.7rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.jx-ai-dialog-input {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    color: #3a3225;
+    background: #ffffff;
+    border: 1px solid rgba(180, 155, 115, 0.35);
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.jx-ai-dialog-input:focus {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.14);
+}
+
+.jx-ai-dialog-input::placeholder {
+    color: #9a8e78;
+}
+
+.jx-ai-dialog-send {
+    flex-shrink: 0;
+    padding: 11px 22px;
+    font-size: 0.88rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    color: #2a2216;
+    background: linear-gradient(135deg, #e7c463, #d4af37);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.jx-ai-dialog-send:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(212, 175, 55, 0.28);
+}
+
+.jx-ai-dialog-send:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.jx-ai-dialog-tip {
+    margin: 8px 0 0 2px;
+    font-size: 0.72rem;
+    color: #9a8e78;
+}
+
+/* 消息内状态与提示 */
+.jx-ai-dialog-thinking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #7a6e58;
+}
+
+.jx-ai-dialog-thinking span {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: jx-ai-dot 1.2s infinite ease-in-out both;
+}
+
+.jx-ai-dialog-thinking span:nth-child(1) { animation-delay: 0s; }
+.jx-ai-dialog-thinking span:nth-child(2) { animation-delay: 0.15s; }
+.jx-ai-dialog-thinking span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes jx-ai-dot {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.jx-ai-dialog-answer {
+    margin-bottom: 8px;
+    color: #3a3225;
+}
+
+.jx-ai-dialog-hint {
+    color: #7a6e58;
+    font-size: 0.82rem;
+}
+
+.jx-ai-dialog-error {
+    color: #b94a48;
+}
+
+@keyframes jx-ai-fadein {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+body.jx-ai-dialog-open {
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    .jx-ai-dialog {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .jx-ai-dialog-shell {
+        max-height: 94vh;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+    }
+
+    .jx-ai-dialog-head {
+        padding: 16px 18px 12px;
+    }
+
+    .jx-ai-dialog-chat {
+        padding: 14px 16px;
+    }
+
+    .jx-ai-dialog-input-area {
+        padding: 12px 16px 18px;
+    }
+
+    .jx-ai-dialog-input-row {
+        flex-wrap: wrap;
+    }
+
+    .jx-ai-dialog-send {
+        width: 100%;
+    }
+}
+
+/* 让新增卡片标题更醒目 */
+.jx-card-num.new {
+    color: var(--jade);
+}
+
+/* ---- 隐藏左下角键盘提示 ---- */
+#kbd-hint,
+.kbd-hint {
+    display: none !important;
+}
+
+/* ============================================================
+   指南页教学区：一栏一栏横向滑动布局
+   ============================================================ */
+
+/* 区域标题 */
+.jx-guide-extra {
+    margin-top: 48px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: var(--max-w);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.jx-guide-extra-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 34px;
+}
+
+.jx-guide-extra-head .section-title {
+    font-size: clamp(1.7rem, 4.5vw, 2.8rem);
+    color: var(--text-dark);
+    -webkit-text-fill-color: var(--text-dark);
+    background: none;
+    margin-bottom: 12px;
+}
+
+.jx-guide-extra-sub {
+    font-size: 0.95rem;
+    color: #777;
+    margin: 0;
+    letter-spacing: 0.08em;
+}
+
+/* 过滤标签栏 */
+.jx-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: var(--max-w);
+    margin: 0 auto 48px;
+    padding: 0 20px;
+}
+
+.jx-filter-btn {
+    font-size: 0.8rem;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: var(--font-sans);
+}
+
+.jx-filter-btn:hover {
+    border-color: rgba(212, 165, 116, 0.6);
+    color: #9c6a28;
+}
+
+.jx-filter-btn.active {
+    border-color: #9c6a28;
+    background: #9c6a28;
+    color: #fff;
+    font-weight: 500;
+}
+
+/* 每一栏 */
+.jx-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    width: 100%;
+}
+
+.jx-row {
+    width: 100%;
+    min-width: 0;
+}
+
+.jx-row-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: var(--max-w);
+    margin: 0 auto 20px;
+    padding: 0 20px;
+}
+
+.jx-row-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(212, 165, 116, 0.12);
+    border: 1px solid rgba(212, 165, 116, 0.25);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+}
+
+.jx-row-titles {
+    flex: 1;
+    min-width: 0;
+}
+
+.jx-row-title {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: 0.08em;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.jx-row-quote {
+    font-size: 0.85rem;
+    color: #888;
+    margin: 6px 0 0;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.jx-row-author {
+    color: #9c6a28;
+    font-style: normal;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.jx-row-count {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #888;
+    background: rgba(212, 165, 116, 0.1);
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    padding: 4px 13px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* 横向滚动容器 */
+.jx-row-scroll {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    padding: 10px 20px 28px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 165, 116, 0.4) transparent;
+    cursor: grab;
+}
+
+.jx-row-scroll.dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+}
+
+.jx-row-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.jx-row-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.jx-row-scroll::-webkit-scrollbar-thumb {
+    background: rgba(212, 165, 116, 0.4);
+    border-radius: 4px;
+}
+
+.jx-row-scroll .jx-card-thumb {
+    scroll-snap-align: start;
+}
+
+/* 教学卡片头部图标（Modal 内完整卡片用） */
+.jx-card-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: rgba(212, 165, 116, 0.12);
+    border: 1px solid rgba(212, 165, 116, 0.22);
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 1.35rem;
+}
+
+/* 响应式：一栏布局在窄屏收窄 */
+@media (max-width: 980px) {
+    .jx-card-thumb {
+        width: 260px;
+        height: 375px;
+    }
+
+    .jx-thumb-art {
+        height: 145px;
+    }
+
+    .jx-row-head {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .jx-row-title {
+        font-size: 1.3rem;
+    }
+
+    .jx-row-count {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .jx-card-thumb {
+        width: 240px;
+        height: 360px;
+    }
+
+    .jx-thumb-art {
+        height: 135px;
+    }
+
+    .jx-filter-bar {
+        gap: 8px;
+        margin-bottom: 36px;
+    }
+
+    .jx-filter-btn {
+        padding: 6px 14px;
+        font-size: 0.75rem;
+    }
+
+    .jx-row-head {
+        padding: 0 16px;
+    }
+
+    .jx-row-scroll {
+        padding: 10px 16px 24px;
+        gap: 14px;
+    }
+}

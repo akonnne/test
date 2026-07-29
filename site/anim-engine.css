@@ -1,0 +1,244 @@
+/* 数道·万象 —— AI 生成动画渲染器样式（黑金主题） */
+
+/* 卡片上的「问 AI」按钮 */
+.jx-thumb-ask {
+    margin-left: 6px;
+    padding: 3px 9px;
+    font-size: 12px;
+    font-family: inherit;
+    color: #d4af37;
+    background: rgba(212, 175, 55, 0.10);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s, color .2s, transform .15s;
+    white-space: nowrap;
+}
+.jx-thumb-ask:hover {
+    background: #d4af37;
+    color: #15151f;
+    transform: translateY(-1px);
+}
+
+/* 生成动画弹层内的挂载区 */
+.jx-gen-mount {
+    margin-top: 14px;
+}
+.gen-stage {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #15151f;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+.gen-canvas {
+    display: block;
+    width: 100%;
+}
+.gen-controls {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.gen-slider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.gen-slider label {
+    color: #cdbf8f;
+    font-size: 14px;
+    min-width: 84px;
+    font-family: "Noto Sans SC", sans-serif;
+}
+.gen-slider-val {
+    color: #d4af37;
+    font-weight: 600;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 15px;
+}
+.gen-slider input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #d4af37, #8a6f2a);
+    outline: none;
+}
+.gen-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #f3e6c0;
+    border: 2px solid #d4af37;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(212, 175, 55, 0.6);
+}
+.gen-slider input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #f3e6c0;
+    border: 2px solid #d4af37;
+    cursor: pointer;
+}
+.gen-steps {
+    margin-top: 12px;
+}
+.gen-step-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.gen-step-desc {
+    flex: 1;
+    color: #e8e2d0;
+    font-size: 14px;
+    font-family: "Noto Sans SC", sans-serif;
+    line-height: 1.4;
+}
+.gen-step-prev, .gen-step-next {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-family: "Noto Sans SC", sans-serif;
+    color: #15151f;
+    background: #d4af37;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+}
+.gen-step-prev:hover:not(:disabled), .gen-step-next:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+.gen-step-prev:disabled, .gen-step-next:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+.gen-step-replay {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: "Noto Sans SC", sans-serif;
+    color: #d4af37;
+    background: transparent;
+    border: 1px solid #d4af37;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s, transform .15s;
+}
+.gen-step-replay:hover {
+    background: rgba(212,175,55,.12);
+    transform: translateY(-1px);
+}
+.gen-step-voice {
+    padding: 6px 10px;
+    font-size: 14px;
+    line-height: 1;
+    font-family: "Noto Sans SC", sans-serif;
+    color: #d4af37;
+    background: rgba(212,175,55,.10);
+    border: 1px solid rgba(212,175,55,.5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s, transform .15s, opacity .2s;
+}
+.gen-step-voice:hover {
+    background: rgba(212,175,55,.20);
+    transform: translateY(-1px);
+}
+.gen-step-voice.off {
+    color: #8a8266;
+    background: transparent;
+    border-color: rgba(138,130,102,.4);
+    opacity: .7;
+}
+
+/* 提问区「打开生成动画」按钮 */
+.ask-gen-btn {
+    margin-top: 14px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-family: "Noto Sans SC", sans-serif;
+    font-weight: 600;
+    color: #15151f;
+    background: linear-gradient(135deg, #e7c463, #d4af37);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+    transition: transform .15s, box-shadow .2s;
+}
+.ask-gen-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(212, 175, 55, 0.45);
+}
+
+/* ---- 白金色浅色主题（AI 生成弹层） ---- */
+.jx-modal-light .gen-stage,
+.jx-ai-dialog-shell .gen-stage {
+    background: #f4f1ea;
+    border-color: rgba(138, 115, 85, 0.22);
+    box-shadow: inset 0 0 40px rgba(180, 160, 120, 0.12);
+}
+
+.jx-modal-light .gen-slider label,
+.jx-ai-dialog-shell .gen-slider label {
+    color: #5a4e3c;
+}
+
+.jx-modal-light .gen-slider-val,
+.jx-ai-dialog-shell .gen-slider-val {
+    color: #8a6f2a;
+}
+
+.jx-modal-light .gen-slider input[type="range"],
+.jx-ai-dialog-shell .gen-slider input[type="range"] {
+    background: linear-gradient(90deg, #d4af37, #b8962e);
+}
+
+.jx-modal-light .gen-step-desc,
+.jx-ai-dialog-shell .gen-step-desc {
+    color: #3a3a4e;
+}
+
+.jx-modal-light .gen-step-prev,
+.jx-modal-light .gen-step-next,
+.jx-ai-dialog-shell .gen-step-prev,
+.jx-ai-dialog-shell .gen-step-next {
+    color: #2a2a3e;
+    background: #d4af37;
+}
+
+.jx-modal-light .gen-step-replay,
+.jx-ai-dialog-shell .gen-step-replay {
+    color: #8a6f2a;
+    border-color: #d4af37;
+}
+
+.jx-modal-light .gen-step-replay:hover,
+.jx-ai-dialog-shell .gen-step-replay:hover {
+    background: rgba(212, 175, 55, 0.12);
+}
+
+.jx-modal-light .gen-step-voice,
+.jx-ai-dialog-shell .gen-step-voice {
+    color: #8a6f2a;
+    background: rgba(212, 175, 55, 0.10);
+    border-color: rgba(212, 175, 55, 0.45);
+}
+
+.jx-modal-light .gen-step-voice:hover,
+.jx-ai-dialog-shell .gen-step-voice:hover {
+    background: rgba(212, 175, 55, 0.18);
+}
+
+.jx-modal-light .gen-step-voice.off,
+.jx-ai-dialog-shell .gen-step-voice.off {
+    color: #8a8266;
+    border-color: rgba(138, 130, 102, 0.4);
+}

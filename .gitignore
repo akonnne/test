@@ -1,0 +1,45 @@
+# ===================== 依赖 =====================
+node_modules/
+
+# ===================== 密钥与环境（含真实 DEEPSEEK_KEY，绝不提交） =====================
+.env
+.env.*
+!.env.example
+
+# ===================== WorkBuddy 内部数据 =====================
+.workbuddy/
+
+# ===================== 运行时生成（Serverless 只读文件系统，不依赖） =====================
+generated/
+
+# ===================== 临时测试 / 调试脚本（非项目交付物） =====================
+tmp_test/
+cdp_shots/
+__*.png
+*.png
+cdp_*.js
+test_*.js
+smoke_test.js
+probe.js
+verify_filter.js
+rewrite_tags.js
+screenshot_cdp.mjs
+check_*.js
+check_*.mjs
+extract_catalog.js
+inject_meta.py
+serve.js
+user_*.js
+user_*.html
+user_*.css
+xsyy_raw.html
+anim_catalog.json
+
+# ===================== 空 / 转储文件 =====================
+dump.*
+*.err
+*.log
+
+# ===================== OS =====================
+.DS_Store
+Thumbs.db
