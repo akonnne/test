@@ -1,0 +1,18 @@
+# Cloudflare Tunnel 配置文件（数道·万象 —— 自托管后端架构）
+# 使用步骤见 TUNNEL.md
+
+# 1. 先用 `cloudflared tunnel create shudao-wanxiang` 创建隧道，会返回一个 UUID
+# 2. 把下面 tunnel 的值改成你的 UUID
+# 3. credentials-file 的路径通常是：
+#    Windows: C:\Users\<用户名>\.cloudflared\<UUID>.json
+#    Linux/macOS: ~/.cloudflared/<UUID>.json
+
+tunnel: <YOUR_TUNNEL_UUID>
+credentials-file: <PATH_TO_TUNNEL_CREDENTIALS_JSON>
+
+# ingress 规则：把所有流量转发到本机后端 server.js（默认端口 8099）
+ingress:
+  - service: http://localhost:8099
+
+# 兜底规则（必须存在）
+  - service: http_status:404
